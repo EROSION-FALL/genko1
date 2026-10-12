@@ -17,7 +17,6 @@
   --temptation-bottom: calc(var(--avatar-bottom) + var(--avatar-size) + 2px);
   --main-color-pink: #ff007f;
   --main-color-accent: #ff1493;
-  --video-offset-y: 0px;
   --gauge-bottom: 86px;
   --hero-serif-height: 76px;
   --hero-serif-color: #66ffff;
@@ -187,10 +186,10 @@ html,body{width:100%;height:100%;background:#020005;color:#f0d0e8;font-family:'R
   pointer-events:none;
   display:flex;align-items:center;justify-content:flex-start;
   background:rgba(10,2,15,0.85);
-  border:1px solid var(--hero-serif-border);
+  border:1px solid var(--hp-color, var(--hero-serif-border));
   border-radius:8px;
   padding:4px 8px;
-  box-shadow:0 0 10px rgba(0,0,0,0.8);
+  box-shadow:0 0 10px var(--hp-color, rgba(0,0,0,0.8));
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 #heroMessageWrap{
@@ -434,6 +433,9 @@ html,body{width:100%;height:100%;background:#020005;color:#f0d0e8;font-family:'R
   z-index:27;
   pointer-events: auto;
   cursor: pointer;
+  /* --hp / --hp-color のスコープ（この配下で参照可能） */
+  --hp: 100;
+  --hp-color: #00ff66;
 }
 .main-bar-bg{
   width:100%; height:20px;
@@ -445,9 +447,12 @@ html,body{width:100%;height:100%;background:#020005;color:#f0d0e8;font-family:'R
 }
 
 #mainGaugeFill{
-  height:100%; width:100%; border-radius:3px;
-  background:#00ff66;
-  box-shadow:0 0 10px #00ff66; transition:width .3s ease, background-color .3s ease, box-shadow .3s ease;
+  height:100%;
+  width:calc(var(--hp, 100) * 1%);
+  border-radius:3px;
+  background:var(--hp-color, #00ff66);
+  box-shadow:0 0 10px var(--hp-color, #00ff66);
+  transition:width .3s ease, background-color .3s ease, box-shadow .3s ease;
 }
 .gauge-label-wrap{
   position:absolute;
@@ -565,7 +570,7 @@ html,body{width:100%;height:100%;background:#020005;color:#f0d0e8;font-family:'R
 }
 @keyframes contShake3 {
   0% { transform: translate(7px, -5px) rotate(1.5deg); }
-  100% { transform: translate(-7px, 5px) rotate(-2deg); }
+  100% { transform: translate(-7px, 5px) rotate(2deg); }
 }
 
 .glitch-heavy{animation:heatWobble .65s ease-in-out infinite alternate}
@@ -719,11 +724,9 @@ const CONFIG = {
   ],
   SFX_TEXT_PLEASURE_UP:   "+10 侵食",
   SFX_TEXT_PLEASURE_DOWN: "-10 侵食",
-  SFX_TEXT_PLEASURE_FORMAT: (sign, val) => `${sign}${val}`,
   DEFEAT_TITLE: '侵食完了',
   DEFEAT_SUB: '',
-  START_BTN_TEXT: '▶ 侵蝕開始',
-  CHARA_IMAGE: 'chara/chara.png'
+  START_BTN_TEXT: '▶ 侵蝕開始'
 };
 
 const canvas = document.getElementById("canvas");
@@ -789,9 +792,10 @@ const gameState = {
   currentClip: null, isGazing: false, gazeStart: 0, guardUntil: 0,
   enemyTimer: null, passiveTimer: null, defeatLoopTimer: null,
   nextAttackTime: 0, attackTimerInterval: null,
-  countdownValue: 0, countdownToken: 0, crisisMode: false,
+  countdownValue: 0, crisisMode: false,
   msgTimer: null, typewriterTimer: null,
-  heroMsgTimer: null, heroTypewriterTimer: null
+  heroMsgTimer: null, heroTypewriterTimer: null,
+  playSessionId: 0
 };
 
 function showError(msg) {
@@ -1079,7 +1083,7 @@ function resolveSerifs(actionData) {
   return { enemySerif, heroSerif };
 }
 
-function handleEventSerifs(eventName, actionData) {
+function handleEventSerifs(actionData) {
   const { enemySerif, heroSerif } = resolveSerifs(actionData);
   if (enemySerif) setMessage(enemySerif);
   if (heroSerif) setHeroMessage(heroSerif);
@@ -1214,13 +1218,21 @@ function findMissingVideos() {
   return missing;
 }
 
+let videoOffsetY = 50;
+function updateVideoOffsetY() {
+  videoOffsetY = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--video-offset-y')) || 0;
+}
+updateVideoOffsetY();
+
 function resizeCanvas(){
   const rect = canvas.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio||1,2);
   canvas.width = rect.width*dpr; canvas.height = rect.height*dpr;
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-window.addEventListener("resize",resizeCanvas); resizeCanvas();
+window.addEventListener("resize",resizeCanvas);
+window.addEventListener("resize",updateVideoOffsetY);
+resizeCanvas();
 
 function spawnOno(text, intensity=1){
   const el = document.createElement("div");
@@ -1300,8 +1312,6 @@ function typeWriterHeroMessage(text, speed = CONFIG.HERO_TYPE_SPEED) {
 function setMessage(text){ typeWriterMessage(text, CONFIG.ENEMY_TYPE_SPEED); }
 function setHeroMessage(text){ typeWriterHeroMessage(text, CONFIG.HERO_TYPE_SPEED); }
 
-function initHeroAvatarImage() { heroAvatarSprite.style.backgroundImage = `url("${CONFIG.CHARA_IMAGE}")`; }
-
 function getCurrentStageLevel() {
   const pct = gameState.pleasure / CONFIG.MAX_PLEASURE;
   if (pct >= CONFIG.STAGE_THRESHOLDS.stage4) return 4;
@@ -1313,7 +1323,8 @@ function getCurrentStageLevel() {
 function updateHeroAvatar() {
   const level = getCurrentStageLevel();
   const currentStage = Math.min(level, 4);
-  heroAvatarWrap.className = `stage-${currentStage}`;
+  heroAvatarWrap.classList.remove('stage-1','stage-2','stage-3','stage-4');
+  heroAvatarWrap.classList.add(`stage-${currentStage}`);
   const positions = { 1: "0px 0px", 2: "-96px 0px", 3: "0px -96px", 4: "-96px -96px" };
   heroAvatarSprite.style.backgroundPosition = positions[currentStage] || "0px 0px";
 }
@@ -1324,7 +1335,6 @@ function updateCommandUI(){
   updateHeroAvatar();
 
   const elements = [title1, title2, title3];
-  elements.forEach(el => el.className = "cmd-title");
 
   const stageData = gameState.parsedTimeline.stages[gameState.stage] || {};
   const b1 = stageData['BUTTON1'], b2 = stageData['BUTTON2'], b3 = stageData['BUTTON3'];
@@ -1341,8 +1351,8 @@ function updateCommandUI(){
   title1.textContent = `・${getBtnText(b1, 'BUTTON1')}`;
   title2.textContent = `・${getBtnText(b2, 'BUTTON2')}`;
   title3.textContent = `・${getBtnText(b3, 'BUTTON3')}`;
-  let styleClass = `cmd-stage${Math.min(level, 4)}`;
-  elements.forEach(el => el.classList.add(styleClass));
+  const styleClass = `cmd-stage${Math.min(level, 4)}`;
+  elements.forEach(el => el.className = `cmd-title ${styleClass}`);
 }
 
 function showCommands(flag){
@@ -1368,24 +1378,21 @@ function playEventVideo(eventData, eventName, onComplete=null) {
     return;
   }
 
-  let actions = eventData.actions || [];
-  if (actions.length === 0 && eventData.video) {
-    actions = [{
-      type: 'action', video: eventData.video, speed: 1.0, shake: 0, holdSec: 0,
-      tag: eventData.tag || null, serif: eventData.serif || null, serif1: eventData.serif1 || null,
-      pleasureType: eventData.pleasureType, pleasureVal: eventData.pleasureVal, sfxCount: eventData.sfxCount, nextStage: eventData.nextStage
-    }];
-  }
+  const sessionId = ++gameState.playSessionId;
+
+  const actions = eventData.actions || [];
 
   if (actions.length === 0) {
     stopContinuousShake();
-    handleEventSerifs(eventName, eventData);
+    handleEventSerifs(eventData);
     if(onComplete) onComplete();
     return;
   }
 
   let actionIndex = 0;
   async function playNextAction() {
+    if (sessionId !== gameState.playSessionId) return;
+
     if (actionIndex >= actions.length) {
       stopContinuousShake();
       if (onComplete) onComplete();
@@ -1407,7 +1414,7 @@ function playEventVideo(eventData, eventName, onComplete=null) {
         updatePleasure();
         if (pVal !== 0 && eventName !== 'ENEMY_ATTACK') {
           const sign = pVal >= 0 ? '+' : '';
-          spawnOno(CONFIG.SFX_TEXT_PLEASURE_FORMAT(sign, pVal), 1);
+          spawnOno(`${sign}${pVal}`, 1);
         }
       }
     }
@@ -1419,25 +1426,29 @@ function playEventVideo(eventData, eventName, onComplete=null) {
     const sfx = currentAction.sfxCount !== undefined ? currentAction.sfxCount : (actionIndex === 1 && eventData.sfxCount !== undefined ? eventData.sfxCount : 0);
     for (let i = 0; i < sfx; i++) {
       setTimeout(() => {
+        if (sessionId !== gameState.playSessionId) return;
         doFlash(true); triggerShockwave();
         showMultipleOno(gameState.sfxTexts.attack || CONFIG.SFX_TEXTS_ATTACK, 1 + i * 0.3);
       }, i * CONFIG.SFX_STAGGER_MS);
     }
 
-    handleEventSerifs(eventName, currentAction);
+    handleEventSerifs(currentAction);
     startContinuousShake(currentAction.shake || 0);
 
     const targetSpeed = currentAction.speed || 1.0;
     const holdDuration = (currentAction.holdSec || 0) * 1000;
     const clip = currentAction.video;
     if (!clip) {
-      setTimeout(() => { playNextAction(); }, holdDuration);
+      setTimeout(() => {
+        if (sessionId !== gameState.playSessionId) return;
+        playNextAction();
+      }, holdDuration);
       return;
     }
 
     const isLastAction = (actionIndex === actions.length);
     const isLoop = isLastAction && (eventName === 'WAIT' || eventName === 'DEFEAT');
-    gameState.currentClip = { ...clip, loop: isLoop };
+    gameState.currentClip = { ...clip, loop: isLoop, sessionId };
 
     const applySpeed = () => { video.playbackRate = targetSpeed; };
 
@@ -1471,7 +1482,6 @@ function playEventVideo(eventData, eventName, onComplete=null) {
       }, 500);
     });
 
-    // ===== 動画URL解決 =====
     let clipURL = null;
     if (clip.type === 'file') {
       clipURL = gameState.videoURLs[clip.file];
@@ -1482,7 +1492,7 @@ function playEventVideo(eventData, eventName, onComplete=null) {
         return;
       }
     } else if (clip.type === 'range') {
-      clipURL = gameState.videoURLs['battle.mp4'] 
+      clipURL = gameState.videoURLs['battle.mp4']
              || gameState.videoURLs[Object.keys(gameState.videoURLs)[0]];
       if (!clipURL) {
         showError("動画が見つかりません");
@@ -1497,24 +1507,34 @@ function playEventVideo(eventData, eventName, onComplete=null) {
       video.dataset.currentURL = clipURL;
       video.load();
       await waitForLoadedData();
+      if (sessionId !== gameState.playSessionId) return;
     }
 
     const hasTimeRange = clip.start !== undefined && clip.end !== undefined;
     video.loop = isLoop && !hasTimeRange;
 
     await seekTo(hasTimeRange ? clip.start : 0);
+    if (sessionId !== gameState.playSessionId) return;
 
     applySpeed();
     video.play().then(() => { applySpeed(); }).catch(() => {
-      setTimeout(() => { playNextAction(); }, holdDuration);
+      setTimeout(() => {
+        if (sessionId !== gameState.playSessionId) return;
+        playNextAction();
+      }, holdDuration);
     });
 
     if (hasTimeRange) {
       const checkRange = () => {
+        if (sessionId !== gameState.playSessionId) {
+          video.removeEventListener("timeupdate", checkRange);
+          return;
+        }
         if (video.currentTime >= clip.end || video.paused) {
           video.removeEventListener("timeupdate", checkRange);
           video.pause();
           setTimeout(() => {
+            if (sessionId !== gameState.playSessionId) return;
             if (isLoop) { video.currentTime = clip.start; video.play().catch(()=>{}); }
             else { playNextAction(); }
           }, holdDuration);
@@ -1530,11 +1550,16 @@ function playEventVideo(eventData, eventName, onComplete=null) {
           video.removeEventListener("ended", handleFinish);
           video.removeEventListener("timeupdate", checkTime);
           video.pause();
-          setTimeout(() => { 
-            playNextAction(); 
+          setTimeout(() => {
+            if (sessionId !== gameState.playSessionId) return;
+            playNextAction();
           }, holdDuration);
         };
         const checkTime = () => {
+          if (sessionId !== gameState.playSessionId) {
+            video.removeEventListener("timeupdate", checkTime);
+            return;
+          }
           if (video.duration && video.currentTime >= video.duration - 0.15) {
             handleFinish();
           }
@@ -1562,12 +1587,9 @@ function drawVideo(){
     ctx.fillStyle="#000"; ctx.fillRect(0,0,w,h);
     const vr=video.videoWidth/video.videoHeight, cr=w/h;
     let dw,dh; if(vr>cr){dw=w;dh=dw/vr;} else {dh=h;dw=dh*vr;}
-    
-    const rootStyles = getComputedStyle(document.documentElement);
-    const offsetYVal = parseFloat(rootStyles.getPropertyValue('--video-offset-y')) || 0;
 
     ctx.save(); 
-    ctx.translate(w / 2, (h / 2) - offsetYVal); 
+    ctx.translate(w / 2, (h / 2) - videoOffsetY); 
     if(gameState.isGazing){
       const elapsed=(performance.now()-gameState.gazeStart)/1000;
       if(elapsed > (CONFIG.GAZE_DURATION_MS / 1000)) gameState.isGazing=false;
@@ -1598,9 +1620,10 @@ function updatePleasure(){
   const sanityRatio = Math.max(0, Math.min(1, (CONFIG.MAX_PLEASURE - v) / CONFIG.MAX_PLEASURE));
   const sanityPct = Math.floor(sanityRatio * 100);
   
-  mainGaugeFill.style.width = sanityPct + "%";
+  // 数値テキストはJSで更新
   gaugePercent.textContent = sanityPct + "%";
 
+  // 色計算（緑→黄→赤）
   let r, g, b;
   if (sanityRatio >= 0.5) {
     const t = (sanityRatio - 0.5) / 0.5;
@@ -1610,13 +1633,10 @@ function updatePleasure(){
     r = 255; g = Math.round(255 * t); b = 0;
   }
   const mainColor = `rgb(${r},${g},${b})`;
-  mainGaugeFill.style.backgroundColor = mainColor;
-  mainGaugeFill.style.boxShadow = `0 0 10px ${mainColor}`;
 
-  if (heroSerifArea) {
-    heroSerifArea.style.borderColor = mainColor;
-    heroSerifArea.style.boxShadow = `0 0 10px rgba(${r},${g},${b},0.6)`;
-  }
+  // CSS変数に渡す（--hp: 0〜100, --hp-color: rgb文字列）
+  mainGaugeContainer.style.setProperty('--hp', sanityPct);
+  mainGaugeContainer.style.setProperty('--hp-color', mainColor);
 
   const crisis = v >= CONFIG.CRISIS_THRESHOLD;
   pinkFilter.style.opacity = crisis ? String(CONFIG.PINK_FILTER_OPACITY) : "0";
@@ -1692,7 +1712,7 @@ function startPassive(){
 function scheduleEnemyAttack(){
   clearTimeout(gameState.enemyTimer);
   clearInterval(gameState.attackTimerInterval);
-  gameState.countdownValue=0; gameState.countdownToken++;
+  gameState.countdownValue=0;
   attackTimerBox.style.display="none";
   setCrisisMode(false);
   if(!gameState.battleStarted) return;
@@ -1740,10 +1760,17 @@ function handleButtonClick(btnId) {
   const btnData = stageData[btnName];
   if (!btnData) return;
 
+  // 再生中の動画を完全停止し、古い再生を無効化
+  gameState.playSessionId++;
+  video.pause();
+  video.onended = null;
+  video.ontimeupdate = null;
+  gameState.currentClip = null;
+
   showCommands(false);
   clearTimeout(gameState.enemyTimer);
   clearInterval(gameState.attackTimerInterval);
-  gameState.nextAttackTime = 0; gameState.countdownValue = 0; gameState.countdownToken++;
+  gameState.nextAttackTime = 0; gameState.countdownValue = 0;
   attackTimerBox.style.display = "none"; setCrisisMode(false);
 
   playEventVideo(btnData, btnName, () => {
@@ -1782,7 +1809,7 @@ function defeat(){
   resultOverlay.style.display = "flex";
 
   const defeatEvent = gameState.parsedTimeline.DEFEAT;
-  const hasDefeatVideo = defeatEvent && ((defeatEvent.actions && defeatEvent.actions.length > 0) || defeatEvent.video);
+  const hasDefeatVideo = defeatEvent?.actions?.length > 0;
 
   const continueLoop = () => {
     const randomBtnId = Math.floor(Math.random() * 3) + 1;
@@ -1846,7 +1873,6 @@ function startBattle(){
   }
 }
 
-resultOverlay.onclick = null;
 startButton.onclick = startBattle;
 setupFolderSelect();
 updateHeroAvatar();
