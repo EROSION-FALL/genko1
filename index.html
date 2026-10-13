@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>EROSION FALL</title>
+<title>SHRIFT : CRISIS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Potta+One&family=RocknRoll+One&family=Yuji+Syuku&family=Shippori+Mincho:wght@300;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -77,6 +77,12 @@ html,body{width:100%;height:100%;background:#020005;color:#f0d0e8;font-family:'R
   width:100%;height:100dvh;max-width:480px;margin:0 auto;
   background:#05020a;display:flex;flex-direction:column;position:relative;
   box-shadow:0 0 50px rgba(0,0,0,0.9);
+}
+
+@media (min-width: 768px) {
+  #game {
+    max-width: 720px;
+  }
 }
 
 #screen{
@@ -521,7 +527,22 @@ html,body{width:100%;height:100%;background:#020005;color:#f0d0e8;font-family:'R
   font-size:var(--defeat-title-size);font-weight:900;color:var(--defeat-title-color);
   text-shadow:0 0 10px #ff0055,0 0 20px #000; letter-spacing:4px;
 }
-#resultSub{font-size:14px;color:var(--defeat-sub-color);margin-top:8px;font-weight:bold;letter-spacing:1px;text-shadow:1px 1px 2px #000;}
+#resultSub{
+  font-size:14px;
+  color:var(--defeat-sub-color);
+  margin-top:8px;
+  font-weight:bold;
+  letter-spacing:1px;
+  text-shadow:1px 1px 2px #000;
+  cursor:pointer;
+  pointer-events:auto;
+  text-decoration:underline;
+  animation:blinkText 1.2s ease-in-out infinite alternate;
+}
+@keyframes blinkText{
+  0%{ opacity:0.5; }
+  100%{ opacity:1; }
+}
 
 #startButton{
   position:absolute;z-index:20;left:50%;top:52%;transform:translate(-50%,-50%);
@@ -725,13 +746,13 @@ const CONFIG = {
   SFX_TEXT_PLEASURE_UP:   "+10 侵食",
   SFX_TEXT_PLEASURE_DOWN: "-10 侵食",
   DEFEAT_TITLE: '侵食完了',
-  DEFEAT_SUB: '',
+  DEFEAT_SUB: 'クリックで戻る',
   START_BTN_TEXT: '▶ 侵蝕開始'
 };
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const video = document.getElementById("video");
+let video = document.getElementById("video");
 const screenElem = document.getElementById("screen");
 const enemySelect = document.getElementById("enemySelect");
 const folderSelectButton = document.getElementById("folderSelectButton");
@@ -1098,93 +1119,89 @@ function setupFolderSelect() {
     input.directory = true;
     input.multiple = true;
 
-    input.onchange = async (e) => {
-      const files = Array.from(e.target.files);
-      if (files.length === 0) {
-        showError("ファイルが選択されていません");
-        return;
-      }
-
-      const timelineFile = files.find(f => f.name === 'timeline.txt');
-      const serifFile = files.find(f => f.name === 'セリフ.txt');
-      const charaFile = files.find(f => f.name === 'chara.png');
-      const sfxFile = files.find(f => f.name === '擬音.txt');
-      const videoFiles = files.filter(f => f.name.toLowerCase().endsWith('.mp4'));
-
-      if (!timelineFile) { showError("timeline.txt が見つかりません"); return; }
-      if (videoFiles.length === 0) { showError("動画ファイル（*.mp4）が見つかりません"); return; }
-
-      // 既存のBlob URLを全解放
-      Object.values(gameState.videoURLs).forEach(url => {
-        try { URL.revokeObjectURL(url); } catch (err) {}
-      });
-      gameState.videoURLs = {};
-
-      // 全動画をBlob URL化
-      videoFiles.forEach(f => {
-        gameState.videoURLs[f.name] = URL.createObjectURL(f);
-      });
-
-      // timeline.txt
-      const timelineText = await timelineFile.text();
-      gameState.parsedTimeline = parseNewTimeline(timelineText);
-
-      // セリフ.txt
-      if (serifFile) {
-        const serifText = await serifFile.text();
-        gameState.serifPools = parseSerifFile(serifText);
+input.onchange = async (e) => {
+  try {
+    const files = Array.from(e.target.files);
+    input.value = '';
+    if (files.length === 0) {
+      showError("ファイルが選択されていません");
+      return;
+    }
+    
+    const timelineFile = files.find(f => f.name === 'timeline.txt');
+    const serifFile = files.find(f => f.name === 'セリフ.txt');
+    const charaFile = files.find(f => f.name === 'chara.png');
+    const sfxFile = files.find(f => f.name === '擬音.txt');
+    const videoFiles = files.filter(f => f.name.toLowerCase().endsWith('.mp4'));
+    
+    if (!timelineFile) { showError("timeline.txt が見つかりません"); return; }
+    if (videoFiles.length === 0) { showError("動画ファイル（*.mp4）が見つかりません"); return; }
+    
+    Object.values(gameState.videoURLs).forEach(url => {
+      try { URL.revokeObjectURL(url); } catch (err) {}
+    });
+    gameState.videoURLs = {};
+    
+    videoFiles.forEach(f => {
+      gameState.videoURLs[f.name] = URL.createObjectURL(f);
+    });
+    
+    const timelineText = await timelineFile.text();
+    gameState.parsedTimeline = parseNewTimeline(timelineText);
+    
+    if (serifFile) {
+      const serifText = await serifFile.text();
+      gameState.serifPools = parseSerifFile(serifText);
+    } else {
+      gameState.serifPools = {};
+      showError("セリフ.txt が見つかりません（セリフなしで進行）");
+    }
+    
+    if (sfxFile) {
+      const sfxText = await sfxFile.text();
+      gameState.sfxTexts = parseSfxFile(sfxText);
+    } else {
+      gameState.sfxTexts = { attack: null, defeat: null };
+    }
+    
+    const styleFile = files.find(f => f.name === 'style.css');
+    const dynamicStyleEl = document.getElementById('dynamicStyle');
+    if (dynamicStyleEl) {
+      if (styleFile) {
+        const cssText = await styleFile.text();
+        dynamicStyleEl.textContent = cssText;
       } else {
-        gameState.serifPools = {};
-        showError("セリフ.txt が見つかりません（セリフなしで進行）");
+        dynamicStyleEl.textContent = '';
       }
-
-      // 擬音.txt（任意）
-      if (sfxFile) {
-        const sfxText = await sfxFile.text();
-        gameState.sfxTexts = parseSfxFile(sfxText);
-      } else {
-        gameState.sfxTexts = { attack: null, defeat: null };
+    }
+    
+    if (charaFile) {
+      if (gameState.charaURL) {
+        try { URL.revokeObjectURL(gameState.charaURL); } catch (err) {}
       }
-
-// style.css（任意）敵ごとの見た目上書き
-      const styleFile = files.find(f => f.name === 'style.css');
-      const dynamicStyleEl = document.getElementById('dynamicStyle');
-      if (dynamicStyleEl) {
-        if (styleFile) {
-          const cssText = await styleFile.text();
-          dynamicStyleEl.textContent = cssText;
-        } else {
-          dynamicStyleEl.textContent = '';
-        }
+      gameState.charaURL = URL.createObjectURL(charaFile);
+      heroAvatarSprite.style.backgroundImage = `url("${gameState.charaURL}")`;
+    } else {
+      if (gameState.charaURL) {
+        try { URL.revokeObjectURL(gameState.charaURL); } catch (err) {}
+        gameState.charaURL = null;
       }
-
-
-      // chara.png（任意）
-      if (charaFile) {
-        if (gameState.charaURL) {
-          try { URL.revokeObjectURL(gameState.charaURL); } catch (err) {}
-        }
-        gameState.charaURL = URL.createObjectURL(charaFile);
-        heroAvatarSprite.style.backgroundImage = `url("${gameState.charaURL}")`;
-      } else {
-        if (gameState.charaURL) {
-          try { URL.revokeObjectURL(gameState.charaURL); } catch (err) {}
-          gameState.charaURL = null;
-        }
-        heroAvatarSprite.style.backgroundImage = 'none';
-      }
-
-      // 不足動画チェック
-      const missingVideos = findMissingVideos();
-      if (missingVideos.length > 0) {
-        showError("timeline.txt が参照する動画が不足: " + missingVideos.join(", "));
-      }
-
-      // UI切替
-      enemySelect.style.display = 'none';
-      startButton.style.display = 'block';
-      setHeroMessage("「侵蝕開始」を押してください");
-    };
+      heroAvatarSprite.style.backgroundImage = 'none';
+    }
+    
+    const missingVideos = findMissingVideos();
+    if (missingVideos.length > 0) {
+      showError("timeline.txt が参照する動画が不足: " + missingVideos.join(", "));
+    }
+    
+    enemySelect.style.display = 'none';
+    startButton.style.display = 'block';
+    setHeroMessage("「侵蝕開始」を押してください");
+  } catch (err) {
+    showError("読み込みエラー: " + err.message);
+    console.error(err);
+  }
+};
 
     input.click();
   };
@@ -1218,7 +1235,7 @@ function findMissingVideos() {
   return missing;
 }
 
-let videoOffsetY = 50;
+let videoOffsetY = 20;
 function updateVideoOffsetY() {
   videoOffsetY = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--video-offset-y')) || 0;
 }
@@ -1875,6 +1892,62 @@ function startBattle(){
 
 startButton.onclick = startBattle;
 setupFolderSelect();
+
+function returnToSelect() {
+  // 状態リセット
+  gameState.battleStarted = false;
+  gameState.battleEnded = false;
+  gameState.pleasure = 0;
+  gameState.stage = null;
+  gameState.currentClip = null;
+  gameState.nextAttackTime = 0;
+  gameState.countdownValue = 0;
+  gameState.playSessionId++;
+  
+  // タイマー停止
+  clearTimeout(gameState.enemyTimer);
+  clearInterval(gameState.attackTimerInterval);
+  clearInterval(gameState.passiveTimer);
+  clearInterval(gameState.defeatLoopTimer);
+  clearTimeout(gameState.msgTimer);
+  clearInterval(gameState.typewriterTimer);
+  clearTimeout(gameState.heroMsgTimer);
+  clearInterval(gameState.heroTypewriterTimer);
+  gameState.enemyTimer = null;
+  gameState.passiveTimer = null;
+  gameState.attackTimerInterval = null;
+  gameState.defeatLoopTimer = null;
+  
+  // video を作り直してリスナーを全消去
+  const newVideo = video.cloneNode(true);
+  newVideo.id = "video";
+  newVideo.dataset.currentURL = "";
+  video.parentNode.replaceChild(newVideo, video);
+  video = newVideo;
+  
+  // UIリセット
+  resultOverlay.style.display = "none";
+  attackTimerBox.style.display = "none";
+  nextAttackNotice.classList.remove("active");
+  commandsEl.classList.remove("visible");
+  temptationPopup.classList.remove("visible");
+  messageEl.innerHTML = "";
+  heroMessageEl.innerHTML = "";
+  heroMessageWrap.style.display = "none";
+  stageHeartsEl.textContent = "☠️";
+  stopContinuousShake();
+  screenElem.classList.remove("glitch-heavy");
+  pinkFilter.style.opacity = "0";
+  edgePulse.classList.remove("active");
+  damageContainer.innerHTML = "";
+  
+  // 敵選択画面に戻す
+  enemySelect.style.display = "flex";
+  startButton.style.display = "none";
+}
+
+resultSub.onclick = returnToSelect;
+
 updateHeroAvatar();
 </script>
 </body>
