@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>SHRIFT : CRISIS</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  background:#020005;color:#f0d0e8;
+  font-family:'RocknRoll One',-apple-system,sans-serif;
+}
+
+#game{
+  position:relative;
+  width:100%;height:100dvh;
+  max-width:480px;margin:0 auto;
+  background:#05020a;
+  overflow:hidden;
+}
+@media (min-width: 768px){
+  #game{ max-width:720px; }
+}
+
+.screen{
+  position:absolute;inset:0;
+  display:none;
+  flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.screen.active{display:flex}
+
+/* ===== 起動画面 ===== */
+#startScreen h1{
+  font-size:22px;
+  color:#ff69b4;
+  letter-spacing:4px;
+  text-shadow:0 0 20px rgba(255,0,120,0.8);
+  margin-bottom:12px;
+}
+#startScreen p{
+  font-size:12px;
+  color:#ffcce6;
+  letter-spacing:2px;
+  margin-bottom:40px;
+  opacity:0.7;
+}
+#folderButton{
+  padding:16px 40px;
+  border:1.5px solid #ff66aa;
+  border-radius:4px;
+  background:linear-gradient(180deg,#c01860,#500825);
+  color:#fff;
+  font-size:14px;font-weight:700;
+  cursor:pointer;
+  letter-spacing:2px;
+  box-shadow:0 0 20px rgba(255,0,120,0.5);
+}
+#folderButton:active{transform:scale(0.97)}
+
+/* ===== 図書館画面 ===== */
+#libraryScreen{
+  background:#000;
+}
+#bgVideo{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  z-index:0;
+}
+#libraryScreen::after{ display:none; }
+
+#commandLayer{
+  position:absolute;inset:0;
+  z-index:2;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:center;
+  align-content:flex-start;
+  gap:14px;
+  padding:24px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+.command{
+  width:100px;
+  height:100px;
+  background:transparent;
+  border:1px solid rgba(255,100,180,0.2);
+  border-radius:4px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  padding:0;
+  flex-shrink:0;
+}
+.command:active{
+  background:radial-gradient(circle, rgba(255,0,120,0.25), transparent 70%);
+  border-color:#ff1493;
+  box-shadow:0 0 40px rgba(255,0,120,0.8), inset 0 0 20px rgba(255,0,120,0.3);
+  transform:scale(1.05);
+}
+.command.selected{
+  background:radial-gradient(circle, rgba(255,0,120,0.4), transparent 70%);
+  border-color:#fff;
+  box-shadow:0 0 60px rgba(255,0,120,1);
+}
+
+.command-name{
+  color:rgba(255,200,230,0.35);
+  font-size:14px;
+  letter-spacing:6px;
+  text-shadow:0 0 10px rgba(255,100,180,0.2);
+  transition:all 0.35s ease;
+  white-space:nowrap;
+}
+.command:active .command-name,
+.command.selected .command-name{
+  color:#fff;
+  text-shadow:0 0 30px #ff1493, 0 0 60px #ff007f;
+}
+
+/* ===== 敵画面 ===== */
+#enemyScreen{
+  background:#0a0208;
+  display:none;
+  flex-direction:column;
+}
+#enemyScreen.active{display:flex}
+
+#battleLoop{
+  width:100%;
+  height:55%;
+  object-fit:cover;
+  background:#000;
+  flex-shrink:0;
+}
+
+#enemyInfo{
+  flex:1;
+  padding:16px 20px;
+  overflow-y:auto;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+#enemyName{
+  font-size:20px;
+  color:#ff69b4;
+  letter-spacing:3px;
+  margin-bottom:10px;
+  text-shadow:0 0 12px rgba(255,0,120,0.6);
+}
+#enemyMeta{
+  font-size:11px;
+  color:#ff99cc;
+  letter-spacing:1px;
+  margin-bottom:12px;
+  opacity:0.8;
+}
+#enemyDescription{
+  font-size:13px;
+  line-height:1.6;
+  color:#ffcce6;
+}
+
+#enemyButtons{
+  display:flex;
+  gap:10px;
+  padding:12px 16px;
+  background:rgba(0,0,0,0.7);
+  border-top:1px solid rgba(255,100,180,0.2);
+}
+#enemyButtons button{
+  flex:1;
+  padding:14px;
+  border:1.5px solid #ff66aa;
+  border-radius:4px;
+  background:linear-gradient(180deg,#c01860,#500825);
+  color:#fff;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  letter-spacing:2px;
+}
+#enemyButtons button:active{transform:scale(0.97)}
+#backButton{
+  background:linear-gradient(180deg,#402030,#1a0a12) !important;
+  border-color:#804060 !important;
+}
+
+/* ===== 選択演出画面 ===== */
+#transitionScreen{
+  background:#000;
+  z-index:100;
+}
+#transitionVideo{
+  width:100%;height:100%;
+  object-fit:cover;
+}
+
+/* ===== エラー表示 ===== */
+#errorDisplay{
+  position:absolute;top:10px;left:10px;right:10px;
+  background:rgba(220,0,0,0.9);color:#fff;
+  padding:12px;border-radius:6px;
+  z-index:9999;
+  font-weight:bold;font-family:sans-serif;
+  font-size:12px;white-space:pre-wrap;
+  display:none;
+}
+</style>
+</head>
+<body>
+<div id="game">
+
+  <!-- ① 起動画面 -->
+  <div id="startScreen" class="screen active">
+    <h1>SHRIFT : CRISIS</h1>
+    <p>物語を開く</p>
+    <button id="folderButton">📁 フォルダを選択</button>
+  </div>
+
+  <!-- ② 図書館画面 -->
+  <div id="libraryScreen" class="screen">
+    <video id="bgVideo" autoplay muted loop playsinline></video>
+    <div id="commandLayer"></div>
+  </div>
+
+  <!-- ③ 敵画面 -->
+  <div id="enemyScreen" class="screen">
+    <video id="battleLoop" autoplay muted loop playsinline></video>
+    <div id="enemyInfo">
+      <h2 id="enemyName"></h2>
+      <div id="enemyMeta"></div>
+      <p id="enemyDescription"></p>
+    </div>
+    <div id="enemyButtons">
+      <button id="backButton">選び直す</button>
+      <button id="enterButton">入る</button>
+    </div>
+  </div>
+
+  <!-- ④ 選択演出 -->
+  <div id="transitionScreen" class="screen">
+    <video id="transitionVideo" playsinline muted></video>
+  </div>
+
+  <div id="errorDisplay"></div>
+</div>
+
+<script>
+"use strict";
+
+// ===== 状態 =====
+const state = {
+  enemies: [],
+  currentEnemy: null,
+  screen: "start",
+};
+
+// ===== 要素 =====
+const startScreen = document.getElementById("startScreen");
+const libraryScreen = document.getElementById("libraryScreen");
+const enemyScreen = document.getElementById("enemyScreen");
+const transitionScreen = document.getElementById("transitionScreen");
+
+const folderButton = document.getElementById("folderButton");
+const commandLayer = document.getElementById("commandLayer");
+const bgVideo = document.getElementById("bgVideo");
+
+const battleLoop = document.getElementById("battleLoop");
+const enemyName = document.getElementById("enemyName");
+const enemyMeta = document.getElementById("enemyMeta");
+const enemyDescription = document.getElementById("enemyDescription");
+const backButton = document.getElementById("backButton");
+const enterButton = document.getElementById("enterButton");
+
+const transitionVideo = document.getElementById("transitionVideo");
+const errorDisplay = document.getElementById("errorDisplay");
+
+// ===== 画面切替 =====
+function showScreen(name){
+  document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
+  const el = document.getElementById(name + "Screen");
+  if (el) el.classList.add("active");
+  state.screen = name;
+}
+
+// ===== エラー表示 =====
+function showError(msg){
+  errorDisplay.textContent = msg;
+  errorDisplay.style.display = "block";
+  setTimeout(() => { errorDisplay.style.display = "none"; }, 6000);
+}
+
+// ===== スリープ =====
+function sleep(ms){
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ===== ファイル読み込みヘルパー =====
+function readFileText(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+}
+
+// ===== 図書館画面を表示 =====
+function showLibrary(){
+  showScreen("library");
+  
+  // 背景ループ動画
+  if (bgVideo.src.indexOf("library_loop.mp4") === -1){
+    bgVideo.src = "library_loop.mp4";
+    bgVideo.loop = true;
+    bgVideo.muted = true;
+    bgVideo.playsInline = true;
+  }
+  bgVideo.play().catch((err) => {
+    console.warn("背景動画の再生に失敗:", err);
+  });
+  
+  // 図書館画面のフェードをリセット
+  libraryScreen.style.opacity = "1";
+  libraryScreen.style.transition = "none";
+  
+  // コマンド生成
+  commandLayer.innerHTML = "";
+  state.enemies.forEach(enemy => {
+    const btn = document.createElement("button");
+    btn.className = "command";
+    const nameEl = document.createElement("span");
+    nameEl.className = "command-name";
+    nameEl.textContent = enemy.name;
+    btn.appendChild(nameEl);
+    btn.onclick = () => selectEnemy(enemy, btn);
+    commandLayer.appendChild(btn);
+  });
+  
+  // 9個以下なら中央、10個以上ならスクロール
+  if (state.enemies.length <= 9){
+    commandLayer.style.alignContent = "center";
+    commandLayer.style.overflowY = "hidden";
+  } else {
+    commandLayer.style.alignContent = "flex-start";
+    commandLayer.style.overflowY = "auto";
+  }
+}
+
+// ===== 敵を選択 =====
+async function selectEnemy(enemy, btn){
+  if (state.screen !== "library") return;
+  state.currentEnemy = enemy;
+  
+  // 光る演出
+  btn.classList.add("selected");
+  
+  // 余韻
+  await sleep(300);
+  
+  // 図書館フェードアウト
+  libraryScreen.style.transition = "opacity 0.5s";
+  libraryScreen.style.opacity = "0";
+  
+  await sleep(500);
+  
+  // 背景動画を停止
+  bgVideo.pause();
+  
+  // 選択演出動画を再生
+  showScreen("transition");
+  transitionVideo.src = "select_sequence.mp4";
+  transitionVideo.currentTime = 0;
+  transitionVideo.play().catch((err) => {
+    console.warn("演出動画の再生に失敗:", err);
+    // 失敗時は直接敵画面
+    showEnemyPage(enemy);
+  });
+  
+  // 動画終了で敵画面へ
+  transitionVideo.onended = () => {
+    transitionVideo.src = "";
+    showEnemyPage(enemy);
+  };
+  
+  // 動画エラー時
+  transitionVideo.onerror = () => {
+    showEnemyPage(enemy);
+  };
+}
+
+// ===== 敵画面を表示 =====
+function showEnemyPage(enemy){
+  // 図書館をリセット（次回表示用）
+  libraryScreen.style.opacity = "1";
+  libraryScreen.style.transition = "none";
+  
+  // 敵画面を表示
+  showScreen("enemy");
+  
+  // 動画ループ
+  if (enemy.videoURL){
+    battleLoop.src = enemy.videoURL;
+    battleLoop.play().catch(() => {});
+  }
+  
+  // 情報
+  enemyName.textContent = enemy.info.name || enemy.name;
+  enemyMeta.textContent = enemy.info.author ? `by ${enemy.info.author}` : "";
+  enemyDescription.textContent = enemy.info.description || "";
+}
+
+// ===== 選び直す =====
+backButton.onclick = () => {
+  battleLoop.pause();
+  battleLoop.src = "";
+  // 背景動画を再開
+  if (bgVideo.src){
+    bgVideo.currentTime = 0;
+    bgVideo.play().catch(() => {});
+  }
+  showLibrary();
+};
+
+// ===== 入る =====
+enterButton.onclick = () => {
+  if (!state.currentEnemy){
+    showError("敵が選択されていません");
+    return;
+  }
+  // ★ 後でバトル連動
+  alert(`「${state.currentEnemy.name}」に入ります\n（バトル連動は未実装）`);
+};
+
+// ===== フォルダ選択 =====
+folderButton.onclick = () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.webkitdirectory = true;
+  input.directory = true;
+  input.multiple = true;
+  
+  input.onchange = async (e) => {
+    try {
+      const files = Array.from(e.target.files);
+      input.value = "";
+      if (files.length === 0){
+        showError("ファイルが選択されていません");
+        return;
+      }
+      
+      // サブフォルダごとに整理
+      const folderMap = {};
+      files.forEach(f => {
+        const relPath = f.webkitRelativePath || f.name;
+        const parts = relPath.split("/");
+        if (parts.length >= 3){
+          const name = parts[1];
+          if (!folderMap[name]) folderMap[name] = {};
+          folderMap[name][parts.slice(2).join("/")] = f;
+        }
+      });
+      
+      const names = Object.keys(folderMap);
+      if (names.length === 0){
+        showError("サブフォルダが見つかりません");
+        return;
+      }
+      
+      // 各敵を読み込み
+      state.enemies = [];
+      for (const name of names){
+        const folder = folderMap[name];
+        
+        const timelineFile = folder["timeline.txt"];
+        const serifFile = folder["セリフ.txt"];
+        let videoFile = folder["battle.mp4"];
+        if (!videoFile){
+          const mp4Key = Object.keys(folder).find(k => k.toLowerCase().endsWith(".mp4"));
+          if (mp4Key) videoFile = folder[mp4Key];
+        }
+        
+        const timelineText = timelineFile ? await readFileText(timelineFile) : "";
+        const serifText = serifFile ? await readFileText(serifFile) : "";
+        
+        state.enemies.push({
+          name,
+          info: parseInfo(timelineText),
+          timelineText,
+          serifText,
+          videoURL: videoFile ? URL.createObjectURL(videoFile) : null,
+        });
+      }
+      
+      // 図書館画面へ
+      showLibrary();
+      
+    } catch (err){
+      console.error(err);
+      showError("読み込みエラー: " + err.message);
+    }
+  };
+  
+  input.click();
+};
+
+// ===== [INFO] パース =====
+function parseInfo(text){
+  const info = { name: "", author: "", description: "" };
+  if (!text) return info;
+  const lines = text.split("\n");
+  let inInfo = false;
+  for (const rawLine of lines){
+    const line = rawLine.trim();
+    if (line.match(/^\[INFO\]$/i)){ inInfo = true; continue; }
+    if (line.match(/^\[/)){ inInfo = false; continue; }
+    if (inInfo){
+      const m = line.match(/^(\w+)\s*[:：]\s*(.+)$/);
+      if (m){
+        const key = m[1].toLowerCase();
+        if (key in info) info[key] = m[2].trim();
+      }
+    }
+  }
+  return info;
+}
+
+// ===== 起動 =====
+showScreen("start");
+</script>
+</body>
+</html>
