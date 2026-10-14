@@ -2426,10 +2426,29 @@ function defeat(){
     idx++;
   },CONFIG.DEFEAT_LOOP_INTERVAL);
   
-  if (window.lib && window.lib.showLibrary){
-    setTimeout(() => {
+// ★ 敗北後: ループ継続 + 2秒後に戻るボタン表示
+  if (resultSub && window.lib && window.lib.showLibrary) {
+    resultSub.textContent = "▶ 図書館へ戻る";
+    resultSub.style.display = "block";
+    resultSub.style.cursor = "pointer";
+    resultSub.style.pointerEvents = "auto";
+    resultSub.style.marginTop = "30px";
+    resultSub.style.padding = "14px 32px";
+    resultSub.style.border = "1.5px solid #ff66aa";
+    resultSub.style.borderRadius = "4px";
+    resultSub.style.background = "linear-gradient(180deg, #c01860, #500825)";
+    resultSub.style.color = "#fff";
+    resultSub.style.fontWeight = "700";
+    resultSub.style.letterSpacing = "2px";
+    resultSub.style.boxShadow = "0 0 20px rgba(255,0,120,0.6)";
+    resultSub.style.opacity = "0";
+    resultSub.style.transition = "opacity 1s ease 2s";
+    requestAnimationFrame(() => { resultSub.style.opacity = "1"; });
+    
+    resultSub.onclick = () => {
+      resultSub.style.display = "none";
       window.lib.showLibrary();
-    }, 5000);
+    };
   }
 }
 
@@ -2445,6 +2464,10 @@ function startBattle(){
   gameState.stage = stageKeys.length > 0 ? stageKeys[0] : "1";
   gameState.guardUntil = 0;
   resultOverlay.style.display = "none";
+  if (resultSub) {
+    resultSub.style.display = "none";
+    resultSub.onclick = null;
+  }
   updatePleasure();
   startPassive();
 
