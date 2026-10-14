@@ -408,13 +408,12 @@ const enemyName = document.getElementById("enemyName");
 const enemyMeta = document.getElementById("enemyMeta");
 const enemyDescription = document.getElementById("enemyDescription");
 const backButton = document.getElementById("backButton");
-const enterButton = document.getElementById("errenter){
-Button");
+const enterButton = document.getElementById("enterButton");
 
-const transitionVideo = document.getElementById   ("transitionVideo");
+const transitionVideo = document.getElementById("transitionVideo");
 const errorDisplay = document.getElementById("errorDisplay");
 
- console// ===== 画面切替 =====
+// ===== 画面切替 =====
 function showScreen(name){
   document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
   const el = document.getElementById(name + "Screen");
@@ -448,11 +447,11 @@ function readFileText(file){
 async function playIntro(){
   showScreen("intro");
   
-  startBgVideo.src = "library_loop.mp4";
-  startBgVideo.muted = true;
-  startBgVideo.playsInline = true;
-.w  startBgVideo.loop =arn true;
-  startBgVideo.load();
+startBgVideo.src = "library_loop.mp4";
+startBgVideo.muted = true;
+startBgVideo.playsInline = true;
+startBgVideo.loop = true;
+startBgVideo.load(); // ★ 追加
   
   introVideo.src = "intro.mp4";
   introVideo.muted = true;
@@ -462,7 +461,8 @@ async function playIntro(){
   
   try {
     await introVideo.play();
-  } catch (("イントロ失敗:", err);
+  } catch (err) {
+  console.warn("イントロ失敗:", err);
     await showStartScreen();
     return;
   }
@@ -715,24 +715,32 @@ folderButton.onclick = () => {
       for (const name of names){
         const folder = folderMap[name];
         
-        const timelineFile = folder["timeline.txt"];
-        const serifFile = folder["セリフ.txt"];
-        let videoFile = folder["battle.mp4"];
-        if (!videoFile){
-          const mp4Key = Object.keys(folder).find(k => k.toLowerCase().endsWith(".mp4"));
-          if (mp4Key) videoFile = folder[mp4Key];
-        }
-        
-        const timelineText = timelineFile ? await readFileText(timelineFile) : "";
-        const serifText = serifFile ? await readFileText(serifFile) : "";
-        
-        state.enemies.push({
-          name,
-          info: parseInfo(timelineText),
-          timelineText,
-          serifText,
-          videoURL: videoFile ? URL.createObjectURL(videoFile) : null,
-        });
+const timelineFile = folder["timeline.txt"];
+const serifFile = folder["セリフ.txt"];
+const charaFile = folder["chara.png"];
+const sfxFile = folder["擬音.txt"];
+const styleFile = folder["style.css"];
+let videoFile = folder["battle.mp4"];
+if (!videoFile) {
+  const mp4Key = Object.keys(folder).find(k => k.toLowerCase().endsWith(".mp4"));
+  if (mp4Key) videoFile = folder[mp4Key];
+}
+
+const timelineText = timelineFile ? await readFileText(timelineFile) : "";
+const serifText = serifFile ? await readFileText(serifFile) : "";
+const sfxText = sfxFile ? await readFileText(sfxFile) : "";
+const cssText = styleFile ? await readFileText(styleFile) : "";
+
+state.enemies.push({
+  name,
+  info: parseInfo(timelineText),
+  timelineText,
+  serifText,
+  videoURL: videoFile ? URL.createObjectURL(videoFile) : null,
+  charaURL: charaFile ? URL.createObjectURL(charaFile) : null, // ★ 追加
+  sfxText: sfxText, // ★ 追加
+  cssText: cssText, // ★ 追加
+});
       }
       
       await showLibrary();
