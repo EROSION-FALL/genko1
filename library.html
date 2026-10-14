@@ -699,55 +699,48 @@ function parseInfo(text){
 // ===== 起動 =====
 playIntro();
 
+// ===== 起動 =====
+playIntro();
+
 // ===== デバッグ表示 =====
 function showDebug(msg){
-  let el = document.getElementById("debugBox");
-  if (!el){
-    el = document.createElement("div");
-    el.id = "debugBox";
-    el.style.cssText = `
-      position:fixed;
-      bottom:10px;
-      left:10px;
-      right:10px;
-      background:rgba(0,0,0,0.9);
-      color:#0f0;
-      font-size:11px;
-      padding:8px;
-      border-radius:4px;
-      z-index:99999;
-      font-family:monospace;
-      line-height:1.5;
-      white-space:pre-wrap;
-    `;
-    document.body.appendChild(el);
-  }
-  el.textContent = msg;
+  try {
+    let el = document.getElementById("debugBox");
+    if (!el){
+      el = document.createElement("div");
+      el.id = "debugBox";
+      el.style.cssText = "position:fixed;bottom:10px;left:10px;right:10px;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;padding:8px;border-radius:4px;z-index:99999;font-family:monospace;line-height:1.5;white-space:pre-wrap;";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+  } catch (e) {}
 }
 
-// 1秒ごとに状態を表示
 setInterval(() => {
-  const lines = [];
-  
-  // 現在の画面
-  lines.push("screen: " + state.screen);
-  
-  // introVideo
-  lines.push("intro: ready=" + introVideo.readyState + 
-             " paused=" + introVideo.paused + 
-             " src=" + (introVideo.src ? introVideo.src.split("/").pop() : "なし"));
-  
-  // startBgVideo
-  lines.push("startBg: ready=" + startBgVideo.readyState + 
-             " paused=" + startBgVideo.paused + 
-             " src=" + (startBgVideo.src ? startBgVideo.src.split("/").pop() : "なし"));
-  
-  // bgVideo
-  lines.push("bgVideo: ready=" + bgVideo.readyState + 
-             " paused=" + bgVideo.paused + 
-             " src=" + (bgVideo.src ? bgVideo.src.split("/").pop() : "なし"));
-  
-  showDebug(lines.join("\n"));
+  try {
+    const lines = [];
+    
+    lines.push("screen: " + (typeof state !== "undefined" ? state.screen : "?"));
+    
+    const iv = document.getElementById("introVideo");
+    if (iv) {
+      lines.push("intro: ready=" + iv.readyState + " paused=" + iv.paused + " src=" + (iv.src ? iv.src.split("/").pop() : "なし"));
+    }
+    
+    const sb = document.getElementById("startBgVideo");
+    if (sb) {
+      lines.push("startBg: ready=" + sb.readyState + " paused=" + sb.paused + " src=" + (sb.src ? sb.src.split("/").pop() : "なし"));
+    }
+    
+    const bv = document.getElementById("bgVideo");
+    if (bv) {
+      lines.push("bgVideo: ready=" + bv.readyState + " paused=" + bv.paused + " src=" + (bv.src ? bv.src.split("/").pop() : "なし"));
+    }
+    
+    showDebug(lines.join("\n"));
+  } catch (e) {
+    showDebug("デバッグエラー: " + e.message);
+  }
 }, 1000);
 
 </script>
