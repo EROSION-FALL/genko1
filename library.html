@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>CRAER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{
@@ -167,25 +170,19 @@ html,body{
   transform:scale(1.15);
 }
 
-.lib_command-name{
-  color:#ffffff;
-  font-size:14px;
-  font-weight:700;
-  letter-spacing:5px;
-  text-shadow:
-    2px 2px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    0 0 8px rgba(0,0,0,0.85),
-    0 0 16px rgba(0,0,0,0.6),
-    0 4px 6px rgba(0,0,0,0.7);
-  transition:color 0.4s ease, text-shadow 0.4s ease;
-  white-space:nowrap;
-  animation:lib_float 2s ease-in-out infinite;
-  display:inline-block;
+.lib_command-name {
+  color: #ffffff;
+  font-family: 'Shippori Mincho', serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  text-shadow: none;
+  opacity: 0.7;
+  transition: color 0.4s ease, opacity 0.4s ease;
+  white-space: nowrap;
+  animation: lib_float 2s ease-in-out infinite;
+  display: inline-block;
 }
-
 @keyframes lib_float{
   0%   { transform:translate(0, 0) rotate(-2deg) scale(1); opacity:0.8; }
   25%  { transform:translate(5px, -8px) rotate(2deg) scale(1.05); opacity:1; }
@@ -195,30 +192,15 @@ html,body{
 }
 
 .lib_command:hover .lib_command-name,
-.lib_command:active .lib_command-name{
-  color:#ff69b4;
-  text-shadow:
-    2px 2px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    0 0 12px rgba(255,0,120,0.9),
-    0 0 24px rgba(255,0,120,0.7),
-    0 4px 8px rgba(255,0,120,0.8);
+.lib_command:active .lib_command-name {
+  color: #ff69b4;
+  opacity: 1;
 }
-
-.lib_command.selected .lib_command-name{
-  color:#ffffff;
-  text-shadow:
-    2px 2px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    0 0 20px rgba(255,0,120,1),
-    0 0 40px rgba(255,0,120,0.9),
-    0 0 60px rgba(255,0,120,0.7);
+.lib_command.selected .lib_command-name {
+  color: #ffffff;
+  opacity: 1;
+  text-shadow: 0 0 20px rgba(255, 0, 120, 1);
 }
-
 /* ===== 敵画面 ===== */
 #lib_enemyScreen{
   background:#0a0208;
