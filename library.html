@@ -739,7 +739,7 @@ enterButton.onclick = () => {
     type: "startBattle",
     timelineText: enemy.timelineText,
     serifText: enemy.serifText,
-    videoURL: enemy.videoURL,
+    videoURLs: enemy.videoURLs,
     charaURL: enemy.charaURL, // ★ 追加
     sfxText: enemy.sfxText, // ★ 追加
     cssText: enemy.cssText, // ★ 追加
@@ -830,12 +830,20 @@ const serifText = serifFile ? await readFileText(serifFile) : "";
 const sfxText = sfxFile ? await readFileText(sfxFile) : "";
 const cssText = styleFile ? await readFileText(styleFile) : "";
 
+// ★ 全mp4をBlob化
+const allVideoURLs = {};
+Object.entries(folder).forEach(([k, f]) => {
+  if (k.toLowerCase().endsWith('.mp4')) {
+    allVideoURLs[k] = URL.createObjectURL(f);
+  }
+});
+
 state.enemies.push({
   name,
   info: parseInfo(timelineText),
   timelineText,
   serifText,
-  videoURL: videoFile ? URL.createObjectURL(videoFile) : null,
+  videoURLs: allVideoURLs,
   charaURL: charaFile ? URL.createObjectURL(charaFile) : null, // ★ 追加
   sfxText: sfxText, // ★ 追加
   cssText: cssText, // ★ 追加
