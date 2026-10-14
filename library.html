@@ -413,7 +413,7 @@ async function playIntro(){
   introVideo.currentTime = 0;
   
   let failed = false;
-  introVideo.on awaiterror = () => { failed = true; };
+  introVideo.onerror = () => { failed = true; };
   
   try {
     introVideo.play();
@@ -450,21 +450,35 @@ async function playIntro(){
 }
 
 // ===== 起動画面を表示 =====
-function showStartScreen(){
+function showStartScreen() {
   showScreen("start");
   
   // 背景ループ開始
-  if (startBgVideo){
-    if (startBgVideo.src.indexOf("library_loop.mp4") === -1){
+  if (startBgVideo) {
+    if (startBgVideo.src.indexOf("library_loop.mp4") === -1) {
       startBgVideo.src = "library_loop.mp4";
+      startBgVideo.load();
     }
     startBgVideo.currentTime = 0;
     startBgVideo.muted = true;
     startBgVideo.playsInline = true;
     startBgVideo.loop = true;
-    startBgVideo.play().catch((err) => {
-      console.warn("背景ループ再生失敗:", err);
-    });
+    startBgVideo.setAttribute("muted", "");
+    startBgVideo.setAttribute("playsinline", "");
+    
+    // 表示直後に即再生
+    const tryPlay = () => {
+      startBgVideo.play().then(() => {
+        console.log("背景ループ開始");
+      }).catch((err) => {
+        console.warn("背景ループ失敗:", err.message);
+        // リトライ（0.5秒後）
+        setTimeout(() => {
+          startBgVideo.play().catch(() => {});
+        }, 500);
+      });
+    };
+    tryPlay();
   }
   
   // UIフェードイン
@@ -473,7 +487,6 @@ function showStartScreen(){
     startUI.classList.add("visible");
   }, 300);
 }
-
 // ===== 図書館画面を表示 =====
 function showLibrary(){
   showScreen("library");
@@ -699,14 +712,11 @@ function parseInfo(text){
 // ===== 起動 =====
 playIntro();
 
-// ===== 起動 =====
-playIntro();
-
 // ===== デバッグ表示 =====
-function showDebug(msg){
+function showDebug(msg) {
   try {
     let el = document.getElementById("debugBox");
-    if (!el){
+    if (!el) {
       el = document.createElement("div");
       el.id = "debugBox";
       el.style.cssText = "position:fixed;bottom:10px;left:10px;right:10px;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;padding:8px;border-radius:4px;z-index:99999;font-family:monospace;line-height:1.5;white-space:pre-wrap;";
