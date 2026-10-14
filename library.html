@@ -163,7 +163,7 @@ html,body{
     0 4px 6px rgba(0,0,0,0.7);
   transition:color 0.4s ease, text-shadow 0.4s ease;
   white-space:nowrap;
-  animation:float 6s ease-in-out infinite;
+  animation:float 2s ease-in-out infinite;
   display:inline-block;
 }
 
@@ -173,10 +173,6 @@ html,body{
   50%  { transform:translate(0, -12px) rotate(-2deg) scale(1); opacity:0.8; }
   75%  { transform:translate(-5px, -8px) rotate(2deg) scale(1.05); opacity:1; }
   100% { transform:translate(0, 0) rotate(-2deg) scale(1); opacity:0.8; }
-}
-
-.command-name{
-  animation:float 2s ease-in-out infinite;
 }
 
 .command:hover .command-name,
@@ -306,7 +302,7 @@ html,body{
 
   <!-- ① 起動画面 -->
   <div id="startScreen" class="screen">
-    <video id="startBgVideo" muted loop playsinline src="library_loop.mp4"></video>
+    <video id="startBgVideo" muted loop playsinline></video>
     <div id="startUI">
       <h1>SHRIFT : CRISIS</h1>
       <p>物語を選んでください</p>
@@ -407,44 +403,26 @@ function readFileText(file){
   });
 }
 
-// ===== ファイル存在チェック =====
-async function checkFileExists(url){
-  try {
-    const res = await fetch(url, { method: "HEAD" });
-    return res.ok;
-  } catch (err) {
-    return false;
-  }
-}
-
 // ===== イントロ再生 =====
 async function playIntro(){
   showScreen("intro");
-  
-  // intro.mp4 の存在チェック
-  const hasIntro = await checkFileExists("intro.mp4");
-  
-  if (!hasIntro){
-    // イントロなし → 起動画面へ
-    showStartScreen();
-    return;
-  }
   
   introVideo.src = "intro.mp4";
   introVideo.muted = true;
   introVideo.playsInline = true;
   introVideo.currentTime = 0;
   
-  let played = false;
+  let failed = false;
+  introVideo.on awaiterror = () => { failed = true; };
+  
   try {
-    await introVideo.play();
-    played = true;
+    introVideo.play();
   } catch (err){
     console.warn("イントロ再生失敗:", err);
+    failed = true;
   }
   
-  if (!played){
-    // 再生できなかった → 起動画面へ
+  if (failed){
     showStartScreen();
     return;
   }
@@ -465,11 +443,9 @@ async function playIntro(){
         finish();
       }
     };
-    // タイムアウト（15秒）
     setTimeout(finish, 15000);
   });
   
-  // 起動画面へ
   showStartScreen();
 }
 
@@ -479,8 +455,16 @@ function showStartScreen(){
   
   // 背景ループ開始
   if (startBgVideo){
+    if (startBgVideo.src.indexOf("library_loop.mp4") === -1){
+      startBgVideo.src = "library_loop.mp4";
+    }
     startBgVideo.currentTime = 0;
-    startBgVideo.play().catch(()=>{});
+    startBgVideo.muted = true;
+    startBgVideo.playsInline = true;
+    startBgVideo.loop = true;
+    startBgVideo.play().catch((err) => {
+      console.warn("背景ループ再生失敗:", err);
+    });
   }
   
   // UIフェードイン
@@ -497,10 +481,10 @@ function showLibrary(){
   // 背景ループ動画
   if (bgVideo.src.indexOf("library_loop.mp4") === -1){
     bgVideo.src = "library_loop.mp4";
-    bgVideo.loop = true;
-    bgVideo.muted = true;
-    bgVideo.playsInline = true;
   }
+  bgVideo.loop = true;
+  bgVideo.muted = true;
+  bgVideo.playsInline = true;
   bgVideo.play().catch((err) => {
     console.warn("背景動画の再生に失敗:", err);
   });
@@ -518,7 +502,7 @@ function showLibrary(){
     nameEl.className = "command-name";
     nameEl.textContent = enemy.name;
     nameEl.style.animationDelay = (Math.random() * 4).toFixed(2) + "s";
-    nameEl.style.animationDuration = (5 + Math.random() * 3).toFixed(2) + "s";
+    nameEl.style.animationDuration = (1.5 + Math.random() * 2).toFixed(2) + "s";
     btn.appendChild(nameEl);
     btn.onclick = () => selectEnemy(enemy, btn);
     commandLayer.appendChild(btn);
