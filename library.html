@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>イントロ→ループ→選択</title>
+<title>SHRIFT : CRISIS</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{
@@ -150,7 +150,6 @@ function sleep(ms){
   return new Promise(r => setTimeout(r, ms));
 }
 
-// ===== デバッグ表示 =====
 function log(msg){
   console.log(msg);
   debugBox.style.display = "block";
@@ -161,6 +160,14 @@ function log(msg){
 async function playIntro(){
   showScreen("intro");
   
+  // ★ 裏で背景読み込み開始
+  startBgVideo.src = "library_loop.mp4";
+  startBgVideo.muted = true;
+  startBgVideo.playsInline = true;
+  startBgVideo.loop = true;
+  startBgVideo.load();
+  
+  // イントロ再生
   introVideo.src = "intro.mp4";
   introVideo.muted = true;
   introVideo.playsInline = true;
@@ -171,7 +178,6 @@ async function playIntro(){
     await introVideo.play();
   } catch (err){
     console.warn("イントロ失敗:", err);
-    // 失敗しても次へ
     await showStartScreen();
     return;
   }
@@ -192,52 +198,37 @@ async function playIntro(){
         finish();
       }
     };
-    setTimeout(finish, 20000);
+    setTimeout(finish, 30000);
   });
-  
-  // ★ 解放まで待つ
-  await sleep(500);
   
   await showStartScreen();
 }
 
 // ===== 起動画面 =====
 async function showStartScreen(){
-  // introVideo を完全解放
+  // introVideo 解放
   try {
     introVideo.pause();
     introVideo.removeAttribute("src");
     introVideo.load();
   } catch (e){}
   
-  await sleep(300);
-  
   showScreen("start");
   
-  // 背景ループ
-  startBgVideo.src = "library_loop.mp4";
-  startBgVideo.muted = true;
-  startBgVideo.playsInline = true;
-  startBgVideo.loop = true;
+  // 背景ループ（すでに読み込み済み）
   startBgVideo.currentTime = 0;
-  startBgVideo.load();
-  
   try {
     await startBgVideo.play();
   } catch (err){
     console.warn("背景ループ失敗:", err);
-    await sleep(500);
-    try {
-      await startBgVideo.play();
-    } catch (err2){
-      console.warn("リトライ失敗:", err2);
-    }
+    await sleep(300);
+    await startBgVideo.play().catch(()=>{});
   }
   
   // UIフェードイン
   setTimeout(() => {
     startUI.classList.add("visible");
-  }, 300);
+  }, 100);
 }
 
 // ===== フォルダ選択 =====
