@@ -1283,9 +1283,12 @@ enterButton.onclick = () => {
     const dynamicStyleEl = document.getElementById("dynamicStyle");
     if (dynamicStyleEl) dynamicStyleEl.textContent = enemy.cssText || "";
     
-    document.getElementById("game").style.display = "flex";
-    enemyScreen.classList.remove("active");
-    window.idx.startBattle();
+  document.getElementById("game").style.display = "flex";
+enemyScreen.classList.remove("active");
+
+window.dispatchEvent(new Event("resize")); // ★ これ追加
+
+window.idx.startBattle();
   }
 };
 
