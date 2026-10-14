@@ -109,9 +109,9 @@ html,body{
   position:absolute;inset:0;
   z-index:2;
   display:grid;
-  grid-template-columns:repeat(2, 1fr);  /* ★ 2列 */
-  gap:24px;
-  padding:60px 40px;
+  grid-template-columns:repeat(2, 1fr);
+  gap:3vh;
+  padding:5vh 5vw;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   justify-items:center;
@@ -119,8 +119,8 @@ html,body{
 }
 
 .command{
-  width:190px;
-  height:190px;
+  width:26vh;
+  height:26vh;
   background:transparent;
   border:none;
   cursor:pointer;
@@ -128,7 +128,6 @@ html,body{
   align-items:center;
   justify-content:center;
   padding:0;
-  flex-shrink:0;
   transition:transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .command:active{
