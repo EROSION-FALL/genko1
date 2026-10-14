@@ -108,15 +108,14 @@ html,body{
 #commandLayer{
   position:absolute;inset:0;
   z-index:2;
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  justify-content:center;
-  align-content:center;
-  gap:18px;
-  padding:24px;
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);  /* ★ 2列 */
+  gap:24px;
+  padding:60px 40px;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
+  justify-items:center;
+  align-content:flex-start;
 }
 
 .command{
@@ -501,13 +500,7 @@ async function showLibrary(){
     commandLayer.appendChild(btn);
   });
   
-  if (state.enemies.length <= 9){
-    commandLayer.style.alignContent = "center";
-    commandLayer.style.overflowY = "hidden";
-  } else {
-    commandLayer.style.alignContent = "flex-start";
-    commandLayer.style.overflowY = "auto";
-  }
+  
 }
 
 // ===== 敵を選択 =====
