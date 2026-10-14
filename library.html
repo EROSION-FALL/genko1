@@ -1241,10 +1241,13 @@ function showEnemyPage(enemy){
   
   showScreen("enemy");
   
-  if (enemy.videoURL){
-    battleLoop.src = enemy.videoURL;
+  if (enemy.videoURLs) {
+  const firstURL = Object.values(enemy.videoURLs)[0];
+  if (firstURL) {
+    battleLoop.src = firstURL;
     battleLoop.play().catch(() => {});
   }
+}
   
   enemyName.textContent = enemy.info.name || enemy.name;
   enemyMeta.textContent = enemy.info.author ? `by ${enemy.info.author}` : "";
