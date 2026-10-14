@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>SHRIFT : CRISIS</title>
+<title>イントロ→ループ テスト</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{
@@ -26,10 +26,8 @@ html,body{
 .screen{
   position:absolute;inset:0;
   display:none;
-  flex-direction:column;
-  align-items:center;justify-content:center;
 }
-.screen.active{display:flex}
+.screen.active{display:block}
 
 /* ===== イントロ画面 ===== */
 #introScreen{
@@ -39,6 +37,7 @@ html,body{
 #introVideo{
   width:100%;height:100%;
   object-fit:cover;
+  display:block;
 }
 
 /* ===== 起動画面 ===== */
@@ -99,195 +98,18 @@ html,body{
 }
 #folderButton:active{transform:scale(0.97)}
 
-/* ===== 図書館画面 ===== */
-#libraryScreen{
-  background:#000;
-}
-#bgVideo{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  object-fit:cover;
-  z-index:0;
-}
-#libraryScreen::after{
-  content:"";
-  position:absolute;inset:0;
-  background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
-  z-index:1;
-  pointer-events:none;
-}
-
-#commandLayer{
-  position:absolute;inset:0;
-  z-index:2;
-  display:flex;
-  flex-wrap:wrap;
-  align-items:flex-start;
-  justify-content:center;
-  align-content:flex-start;
-  gap:18px;
-  padding:24px;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-}
-
-.command{
-  width:100px;
-  height:100px;
-  background:transparent;
-  border:none;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0;
-  flex-shrink:0;
-  transition:transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.command:active{
-  transform:scale(1.15);
-}
-
-.command-name{
-  color:#ffffff;
-  font-size:14px;
-  font-weight:700;
-  letter-spacing:5px;
-  text-shadow:
-    2px 2px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    0 0 8px rgba(0,0,0,0.85),
-    0 0 16px rgba(0,0,0,0.6),
-    0 4px 6px rgba(0,0,0,0.7);
-  transition:color 0.4s ease, text-shadow 0.4s ease;
-  white-space:nowrap;
-  animation:float 2s ease-in-out infinite;
-  display:inline-block;
-}
-
-@keyframes float{
-  0%   { transform:translate(0, 0) rotate(-2deg) scale(1); opacity:0.8; }
-  25%  { transform:translate(5px, -8px) rotate(2deg) scale(1.05); opacity:1; }
-  50%  { transform:translate(0, -12px) rotate(-2deg) scale(1); opacity:0.8; }
-  75%  { transform:translate(-5px, -8px) rotate(2deg) scale(1.05); opacity:1; }
-  100% { transform:translate(0, 0) rotate(-2deg) scale(1); opacity:0.8; }
-}
-
-.command:hover .command-name,
-.command:active .command-name{
-  color:#ff69b4;
-  text-shadow:
-    2px 2px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    0 0 12px rgba(255,0,120,0.9),
-    0 0 24px rgba(255,0,120,0.7),
-    0 4px 8px rgba(255,0,120,0.8);
-}
-
-.command.selected .command-name{
-  color:#ffffff;
-  text-shadow:
-    2px 2px 0 #000,
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    0 0 20px rgba(255,0,120,1),
-    0 0 40px rgba(255,0,120,0.9),
-    0 0 60px rgba(255,0,120,0.7);
-}
-
-/* ===== 敵画面 ===== */
-#enemyScreen{
-  background:#0a0208;
-  display:none;
-  flex-direction:column;
-}
-#enemyScreen.active{display:flex}
-
-#battleLoop{
-  width:100%;
-  height:55%;
-  object-fit:cover;
-  background:#000;
-  flex-shrink:0;
-}
-
-#enemyInfo{
-  flex:1;
-  padding:16px 20px;
-  overflow-y:auto;
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-}
-#enemyName{
-  font-size:20px;
-  color:#ff69b4;
-  letter-spacing:3px;
-  margin-bottom:10px;
-  text-shadow:0 0 12px rgba(255,0,120,0.6);
-}
-#enemyMeta{
-  font-size:11px;
-  color:#ff99cc;
-  letter-spacing:1px;
-  margin-bottom:12px;
-  opacity:0.8;
-}
-#enemyDescription{
-  font-size:13px;
-  line-height:1.6;
-  color:#ffcce6;
-}
-
-#enemyButtons{
-  display:flex;
-  gap:10px;
-  padding:12px 16px;
-  background:rgba(0,0,0,0.7);
-  border-top:1px solid rgba(255,100,180,0.2);
-}
-#enemyButtons button{
-  flex:1;
-  padding:14px;
-  border:1.5px solid #ff66aa;
+/* ===== デバッグ ===== */
+#debugBox{
+  position:fixed;bottom:6px;left:6px;right:6px;
+  background:rgba(0,0,0,0.85);
+  color:#0f0;
+  font-size:10px;
+  padding:6px;
   border-radius:4px;
-  background:linear-gradient(180deg,#c01860,#500825);
-  color:#fff;
-  font-size:13px;
-  font-weight:700;
-  cursor:pointer;
-  letter-spacing:2px;
-}
-#enemyButtons button:active{transform:scale(0.97)}
-#backButton{
-  background:linear-gradient(180deg,#402030,#1a0a12) !important;
-  border-color:#804060 !important;
-}
-
-/* ===== 選択演出画面 ===== */
-#transitionScreen{
-  background:#000;
-  z-index:100;
-}
-#transitionVideo{
-  width:100%;height:100%;
-  object-fit:cover;
-}
-
-/* ===== エラー表示 ===== */
-#errorDisplay{
-  position:absolute;top:10px;left:10px;right:10px;
-  background:rgba(220,0,0,0.9);color:#fff;
-  padding:12px;border-radius:6px;
-  z-index:9999;
-  font-weight:bold;font-family:sans-serif;
-  font-size:12px;white-space:pre-wrap;
+  z-index:99999;
+  font-family:monospace;
+  line-height:1.4;
+  white-space:pre-wrap;
   display:none;
 }
 </style>
@@ -295,14 +117,14 @@ html,body{
 <body>
 <div id="game">
 
-  <!-- ⓪ イントロ画面 -->
+  <!-- ① イントロ画面 -->
   <div id="introScreen" class="screen active">
-    <video id="introVideo" playsinline muted></video>
+    <video id="introVideo" playsinline muted preload="auto"></video>
   </div>
 
-  <!-- ① 起動画面 -->
+  <!-- ② 起動画面 -->
   <div id="startScreen" class="screen">
-    <video id="startBgVideo" muted loop playsinline></video>
+    <video id="startBgVideo" muted loop playsinline preload="auto"></video>
     <div id="startUI">
       <h1>SHRIFT : CRISIS</h1>
       <p>物語を選んでください</p>
@@ -310,124 +132,77 @@ html,body{
     </div>
   </div>
 
-  <!-- ② 図書館画面 -->
-  <div id="libraryScreen" class="screen">
-    <video id="bgVideo" autoplay muted loop playsinline></video>
-    <div id="commandLayer"></div>
-  </div>
-
-  <!-- ③ 敵画面 -->
-  <div id="enemyScreen" class="screen">
-    <video id="battleLoop" autoplay muted loop playsinline></video>
-    <div id="enemyInfo">
-      <h2 id="enemyName"></h2>
-      <div id="enemyMeta"></div>
-      <p id="enemyDescription"></p>
-    </div>
-    <div id="enemyButtons">
-      <button id="backButton">選び直す</button>
-      <button id="enterButton">入る</button>
-    </div>
-  </div>
-
-  <!-- ④ 選択演出 -->
-  <div id="transitionScreen" class="screen">
-    <video id="transitionVideo" playsinline muted></video>
-  </div>
-
-  <div id="errorDisplay"></div>
+  <div id="debugBox"></div>
 </div>
 
 <script>
 "use strict";
 
-// ===== 状態 =====
-const state = {
-  enemies: [],
-  currentEnemy: null,
-  screen: "intro",
-};
-
 // ===== 要素 =====
 const introScreen = document.getElementById("introScreen");
 const startScreen = document.getElementById("startScreen");
-const libraryScreen = document.getElementById("libraryScreen");
-const enemyScreen = document.getElementById("enemyScreen");
-const transitionScreen = document.getElementById("transitionScreen");
-
 const introVideo = document.getElementById("introVideo");
 const startBgVideo = document.getElementById("startBgVideo");
 const startUI = document.getElementById("startUI");
 const folderButton = document.getElementById("folderButton");
-
-const commandLayer = document.getElementById("commandLayer");
-const bgVideo = document.getElementById("bgVideo");
-
-const battleLoop = document.getElementById("battleLoop");
-const enemyName = document.getElementById("enemyName");
-const enemyMeta = document.getElementById("enemyMeta");
-const enemyDescription = document.getElementById("enemyDescription");
-const backButton = document.getElementById("backButton");
-const enterButton = document.getElementById("enterButton");
-
-const transitionVideo = document.getElementById("transitionVideo");
-const errorDisplay = document.getElementById("errorDisplay");
+const debugBox = document.getElementById("debugBox");
 
 // ===== 画面切替 =====
 function showScreen(name){
   document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
   const el = document.getElementById(name + "Screen");
   if (el) el.classList.add("active");
-  state.screen = name;
-}
-
-// ===== エラー表示 =====
-function showError(msg){
-  errorDisplay.textContent = msg;
-  errorDisplay.style.display = "block";
-  setTimeout(() => { errorDisplay.style.display = "none"; }, 6000);
 }
 
 // ===== スリープ =====
 function sleep(ms){
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(r => setTimeout(r, ms));
 }
 
-// ===== ファイル読み込みヘルパー =====
-function readFileText(file){
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsText(file);
-  });
+// ===== デバッグ =====
+function log(msg){
+  console.log(msg);
+  debugBox.textContent += msg + "\n";
 }
+function resetLog(){
+  debugBox.textContent = "";
+}
+
+// ===== 状態監視 =====
+setInterval(() => {
+  const lines = [];
+  lines.push("intro: ready=" + introVideo.readyState + " paused=" + introVideo.paused);
+  lines.push("startBg: ready=" + startBgVideo.readyState + " paused=" + startBgVideo.paused);
+  debugBox.setAttribute("data-status", lines.join(" | "));
+  debugBox.textContent = lines.join("\n");
+}, 1000);
 
 // ===== イントロ再生 =====
 async function playIntro(){
+  log("=== playIntro 開始 ===");
   showScreen("intro");
+  debugBox.style.display = "block";
   
   introVideo.src = "intro.mp4";
   introVideo.muted = true;
   introVideo.playsInline = true;
   introVideo.currentTime = 0;
+  introVideo.load();
+  log("intro.mp4 読み込み開始");
   
-  let failed = false;
-  introVideo.onerror = () => { failed = true; };
-  
+  // 再生
   try {
-    introVideo.play();
+    await introVideo.play();
+    log("intro 再生成功");
   } catch (err){
-    console.warn("イントロ再生失敗:", err);
-    failed = true;
-  }
-  
-  if (failed){
+    log("intro 再生失敗: " + err.message);
+    // 失敗しても次へ
+    await sleep(500);
     showStartScreen();
     return;
   }
   
-  // 動画終了を待つ
+  // 終了を待つ
   await new Promise((resolve) => {
     let resolved = false;
     const finish = () => {
@@ -443,316 +218,57 @@ async function playIntro(){
         finish();
       }
     };
-    setTimeout(finish, 15000);
+    setTimeout(finish, 20000);
   });
   
+  log("intro 終了");
   showStartScreen();
 }
 
-// ===== 起動画面を表示 =====
-function showStartScreen() {
+// ===== 起動画面 =====
+async function showStartScreen(){
+  log("=== showStartScreen 開始 ===");
   showScreen("start");
   
-  // 背景ループ開始
-  if (startBgVideo) {
-    if (startBgVideo.src.indexOf("library_loop.mp4") === -1) {
-      startBgVideo.src = "library_loop.mp4";
-      startBgVideo.load();
+  // 背景ループ
+  startBgVideo.src = "library_loop.mp4";
+  startBgVideo.muted = true;
+  startBgVideo.playsInline = true;
+  startBgVideo.loop = true;
+  startBgVideo.currentTime = 0;
+  startBgVideo.load();
+  log("library_loop.mp4 読み込み開始");
+  
+  try {
+    await startBgVideo.play();
+    log("背景ループ 再生成功");
+  } catch (err){
+    log("背景ループ 失敗: " + err.message);
+    // リトライ
+    await sleep(500);
+    try {
+      await startBgVideo.play();
+      log("背景ループ リトライ成功");
+    } catch (err2){
+      log("背景ループ リトライ失敗: " + err2.message);
     }
-    startBgVideo.currentTime = 0;
-    startBgVideo.muted = true;
-    startBgVideo.playsInline = true;
-    startBgVideo.loop = true;
-    startBgVideo.setAttribute("muted", "");
-    startBgVideo.setAttribute("playsinline", "");
-    
-    // 表示直後に即再生
-    const tryPlay = () => {
-      startBgVideo.play().then(() => {
-        console.log("背景ループ開始");
-      }).catch((err) => {
-        console.warn("背景ループ失敗:", err.message);
-        // リトライ（0.5秒後）
-        setTimeout(() => {
-          startBgVideo.play().catch(() => {});
-        }, 500);
-      });
-    };
-    tryPlay();
   }
   
   // UIフェードイン
   startUI.classList.remove("visible");
   setTimeout(() => {
     startUI.classList.add("visible");
+    log("UI フェードイン");
   }, 300);
 }
-// ===== 図書館画面を表示 =====
-function showLibrary(){
-  showScreen("library");
-  
-  // 背景ループ動画
-  if (bgVideo.src.indexOf("library_loop.mp4") === -1){
-    bgVideo.src = "library_loop.mp4";
-  }
-  bgVideo.loop = true;
-  bgVideo.muted = true;
-  bgVideo.playsInline = true;
-  bgVideo.play().catch((err) => {
-    console.warn("背景動画の再生に失敗:", err);
-  });
-  
-  // 図書館画面のフェードをリセット
-  libraryScreen.style.opacity = "1";
-  libraryScreen.style.transition = "none";
-  
-  // コマンド生成
-  commandLayer.innerHTML = "";
-  state.enemies.forEach(enemy => {
-    const btn = document.createElement("button");
-    btn.className = "command";
-    const nameEl = document.createElement("span");
-    nameEl.className = "command-name";
-    nameEl.textContent = enemy.name;
-    nameEl.style.animationDelay = (Math.random() * 4).toFixed(2) + "s";
-    nameEl.style.animationDuration = (1.5 + Math.random() * 2).toFixed(2) + "s";
-    btn.appendChild(nameEl);
-    btn.onclick = () => selectEnemy(enemy, btn);
-    commandLayer.appendChild(btn);
-  });
-  
-  // 9個以下なら中央、10個以上ならスクロール
-  if (state.enemies.length <= 9){
-    commandLayer.style.alignContent = "center";
-    commandLayer.style.overflowY = "hidden";
-  } else {
-    commandLayer.style.alignContent = "flex-start";
-    commandLayer.style.overflowY = "auto";
-  }
-}
 
-// ===== 敵を選択 =====
-async function selectEnemy(enemy, btn){
-  if (state.screen !== "library") return;
-  state.currentEnemy = enemy;
-  
-  btn.classList.add("selected");
-  await sleep(300);
-  
-  libraryScreen.style.transition = "opacity 0.5s";
-  libraryScreen.style.opacity = "0";
-  await sleep(500);
-  
-  bgVideo.pause();
-  
-  // 選択演出動画
-  showScreen("transition");
-  
-  const tv = transitionVideo;
-  tv.muted = true;
-  tv.playsInline = true;
-  tv.src = "select_sequence.mp4";
-  tv.currentTime = 0;
-  
-  let finished = false;
-  const finish = () => {
-    if (finished) return;
-    finished = true;
-    tv.onended = null;
-    tv.ontimeupdate = null;
-    tv.onerror = null;
-    tv.src = "";
-    showEnemyPage(enemy);
-  };
-  
-  tv.onended = finish;
-  tv.ontimeupdate = () => {
-    if (tv.duration && tv.currentTime >= tv.duration - 0.1){
-      finish();
-    }
-  };
-  tv.onerror = () => {
-    console.warn("演出動画エラー");
-    finish();
-  };
-  
-  tv.play().catch((err) => {
-    console.warn("演出動画の再生に失敗:", err);
-    finish();
-  });
-}
-
-// ===== 敵画面を表示 =====
-function showEnemyPage(enemy){
-  libraryScreen.style.opacity = "1";
-  libraryScreen.style.transition = "none";
-  
-  showScreen("enemy");
-  
-  if (enemy.videoURL){
-    battleLoop.src = enemy.videoURL;
-    battleLoop.play().catch(() => {});
-  }
-  
-  enemyName.textContent = enemy.info.name || enemy.name;
-  enemyMeta.textContent = enemy.info.author ? `by ${enemy.info.author}` : "";
-  enemyDescription.textContent = enemy.info.description || "";
-}
-
-// ===== 選び直す =====
-backButton.onclick = () => {
-  battleLoop.pause();
-  battleLoop.src = "";
-  if (bgVideo.src){
-    bgVideo.currentTime = 0;
-    bgVideo.play().catch(() => {});
-  }
-  showLibrary();
-};
-
-// ===== 入る =====
-enterButton.onclick = () => {
-  if (!state.currentEnemy){
-    showError("敵が選択されていません");
-    return;
-  }
-  alert(`「${state.currentEnemy.name}」に入ります\n（バトル連動は未実装）`);
-};
-
-// ===== フォルダ選択 =====
+// ===== フォルダ選択（今はアラートのみ） =====
 folderButton.onclick = () => {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.webkitdirectory = true;
-  input.directory = true;
-  input.multiple = true;
-  
-  input.onchange = async (e) => {
-    try {
-      const files = Array.from(e.target.files);
-      input.value = "";
-      if (files.length === 0){
-        showError("ファイルが選択されていません");
-        return;
-      }
-      
-      const folderMap = {};
-      files.forEach(f => {
-        const relPath = f.webkitRelativePath || f.name;
-        const parts = relPath.split("/");
-        if (parts.length >= 3){
-          const name = parts[1];
-          if (!folderMap[name]) folderMap[name] = {};
-          folderMap[name][parts.slice(2).join("/")] = f;
-        }
-      });
-      
-      const names = Object.keys(folderMap);
-      if (names.length === 0){
-        showError("サブフォルダが見つかりません");
-        return;
-      }
-      
-      state.enemies = [];
-      for (const name of names){
-        const folder = folderMap[name];
-        
-        const timelineFile = folder["timeline.txt"];
-        const serifFile = folder["セリフ.txt"];
-        let videoFile = folder["battle.mp4"];
-        if (!videoFile){
-          const mp4Key = Object.keys(folder).find(k => k.toLowerCase().endsWith(".mp4"));
-          if (mp4Key) videoFile = folder[mp4Key];
-        }
-        
-        const timelineText = timelineFile ? await readFileText(timelineFile) : "";
-        const serifText = serifFile ? await readFileText(serifFile) : "";
-        
-        state.enemies.push({
-          name,
-          info: parseInfo(timelineText),
-          timelineText,
-          serifText,
-          videoURL: videoFile ? URL.createObjectURL(videoFile) : null,
-        });
-      }
-      
-      showLibrary();
-      
-    } catch (err){
-      console.error(err);
-      showError("読み込みエラー: " + err.message);
-    }
-  };
-  
-  input.click();
+  alert("フォルダ選択は未実装");
 };
-
-// ===== [INFO] パース =====
-function parseInfo(text){
-  const info = { name: "", author: "", description: "" };
-  if (!text) return info;
-  const lines = text.split("\n");
-  let inInfo = false;
-  for (const rawLine of lines){
-    const line = rawLine.trim();
-    if (line.match(/^\[INFO\]$/i)){ inInfo = true; continue; }
-    if (line.match(/^\[/)){ inInfo = false; continue; }
-    if (inInfo){
-      const m = line.match(/^(\w+)\s*[:：]\s*(.+)$/);
-      if (m){
-        const key = m[1].toLowerCase();
-        if (key in info) info[key] = m[2].trim();
-      }
-    }
-  }
-  return info;
-}
 
 // ===== 起動 =====
 playIntro();
-
-// ===== デバッグ表示 =====
-function showDebug(msg) {
-  try {
-    let el = document.getElementById("debugBox");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "debugBox";
-      el.style.cssText = "position:fixed;bottom:10px;left:10px;right:10px;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;padding:8px;border-radius:4px;z-index:99999;font-family:monospace;line-height:1.5;white-space:pre-wrap;";
-      document.body.appendChild(el);
-    }
-    el.textContent = msg;
-  } catch (e) {}
-}
-
-setInterval(() => {
-  try {
-    const lines = [];
-    
-    lines.push("screen: " + (typeof state !== "undefined" ? state.screen : "?"));
-    
-    const iv = document.getElementById("introVideo");
-    if (iv) {
-      lines.push("intro: ready=" + iv.readyState + " paused=" + iv.paused + " src=" + (iv.src ? iv.src.split("/").pop() : "なし"));
-    }
-    
-    const sb = document.getElementById("startBgVideo");
-    if (sb) {
-      lines.push("startBg: ready=" + sb.readyState + " paused=" + sb.paused + " src=" + (sb.src ? sb.src.split("/").pop() : "なし"));
-    }
-    
-    const bv = document.getElementById("bgVideo");
-    if (bv) {
-      lines.push("bgVideo: ready=" + bv.readyState + " paused=" + bv.paused + " src=" + (bv.src ? bv.src.split("/").pop() : "なし"));
-    }
-    
-    showDebug(lines.join("\n"));
-  } catch (e) {
-    showDebug("デバッグエラー: " + e.message);
-  }
-}, 1000);
-
 </script>
 </body>
 </html>
