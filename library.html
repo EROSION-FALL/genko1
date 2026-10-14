@@ -698,6 +698,58 @@ function parseInfo(text){
 
 // ===== 起動 =====
 playIntro();
+
+// ===== デバッグ表示 =====
+function showDebug(msg){
+  let el = document.getElementById("debugBox");
+  if (!el){
+    el = document.createElement("div");
+    el.id = "debugBox";
+    el.style.cssText = `
+      position:fixed;
+      bottom:10px;
+      left:10px;
+      right:10px;
+      background:rgba(0,0,0,0.9);
+      color:#0f0;
+      font-size:11px;
+      padding:8px;
+      border-radius:4px;
+      z-index:99999;
+      font-family:monospace;
+      line-height:1.5;
+      white-space:pre-wrap;
+    `;
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+}
+
+// 1秒ごとに状態を表示
+setInterval(() => {
+  const lines = [];
+  
+  // 現在の画面
+  lines.push("screen: " + state.screen);
+  
+  // introVideo
+  lines.push("intro: ready=" + introVideo.readyState + 
+             " paused=" + introVideo.paused + 
+             " src=" + (introVideo.src ? introVideo.src.split("/").pop() : "なし"));
+  
+  // startBgVideo
+  lines.push("startBg: ready=" + startBgVideo.readyState + 
+             " paused=" + startBgVideo.paused + 
+             " src=" + (startBgVideo.src ? startBgVideo.src.split("/").pop() : "なし"));
+  
+  // bgVideo
+  lines.push("bgVideo: ready=" + bgVideo.readyState + 
+             " paused=" + bgVideo.paused + 
+             " src=" + (bgVideo.src ? bgVideo.src.split("/").pop() : "なし"));
+  
+  showDebug(lines.join("\n"));
+}, 1000);
+
 </script>
 </body>
 </html>
