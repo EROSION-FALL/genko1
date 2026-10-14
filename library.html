@@ -638,14 +638,16 @@ enterButton.onclick = () => {
   
   // データを iframe に送信
   const sendData = () => {
-    battleFrame.contentWindow.postMessage({
-      type: "startBattle",
-      timelineText: enemy.timelineText,
-      serifText: enemy.serifText,
-      videoURL: enemy.videoURL,
-    }, "*");
-  };
-  
+  battleFrame.contentWindow.postMessage({
+    type: "startBattle",
+    timelineText: enemy.timelineText,
+    serifText: enemy.serifText,
+    videoURL: enemy.videoURL,
+    charaURL: enemy.charaURL, // ★ 追加
+    sfxText: enemy.sfxText, // ★ 追加
+    cssText: enemy.cssText, // ★ 追加
+  }, "*");
+};
   // iframe 読み込み確認
   try {
     if (battleFrame.contentDocument && battleFrame.contentDocument.readyState === "complete"){
