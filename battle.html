@@ -1690,7 +1690,7 @@ function startBattle(){
 window.addEventListener("message", (e) => {
   if (!e.data || e.data.type !== "startBattle") return;
   
-  const { timelineText, serifText, videoURL, charaURL, sfxText, cssText } = e.data;
+const { timelineText, serifText, videoURLs, charaURL, sfxText, cssText } = e.data;
   
   gameState.parsedTimeline = parseNewTimeline(timelineText || "");
   gameState.serifPools = parseSerifFile(serifText || "");
@@ -1703,10 +1703,7 @@ window.addEventListener("message", (e) => {
   }
   
   // 動画
-  gameState.videoURLs = {};
-  if (videoURL) {
-    gameState.videoURLs["battle.mp4"] = videoURL;
-  }
+gameState.videoURLs = videoURLs || {};
   
   // アバター
   if (charaURL) {
