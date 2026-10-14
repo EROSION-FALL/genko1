@@ -304,6 +304,18 @@ html,body{
   object-fit:cover;
 }
 
+/* ===== バトル iframe ===== */
+#battleFrame{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:none;
+  display:none;
+  z-index:150;
+  background:#000;
+}
+
 /* ===== エラー表示 ===== */
 #errorDisplay{
   position:absolute;top:10px;left:10px;right:10px;
@@ -359,6 +371,9 @@ html,body{
     <video id="transitionVideo" playsinline muted preload="auto"></video>
   </div>
 
+  <!-- ⑤ バトル iframe -->
+  <iframe id="battleFrame" src="battle.html"></iframe>
+
   <div id="errorDisplay"></div>
 </div>
 
@@ -378,6 +393,7 @@ const startScreen = document.getElementById("startScreen");
 const libraryScreen = document.getElementById("libraryScreen");
 const enemyScreen = document.getElementById("enemyScreen");
 const transitionScreen = document.getElementById("transitionScreen");
+const battleFrame = document.getElementById("battleFrame");
 
 const introVideo = document.getElementById("introVideo");
 const startBgVideo = document.getElementById("startBgVideo");
@@ -392,12 +408,13 @@ const enemyName = document.getElementById("enemyName");
 const enemyMeta = document.getElementById("enemyMeta");
 const enemyDescription = document.getElementById("enemyDescription");
 const backButton = document.getElementById("backButton");
-const enterButton = document.getElementById("enterButton");
+const enterButton = document.getElementById("errenter){
+Button");
 
-const transitionVideo = document.getElementById("transitionVideo");
+const transitionVideo = document.getElementById   ("transitionVideo");
 const errorDisplay = document.getElementById("errorDisplay");
 
-// ===== 画面切替 =====
+ console// ===== 画面切替 =====
 function showScreen(name){
   document.querySelectorAll(".screen").forEach(el => el.classList.remove("active"));
   const el = document.getElementById(name + "Screen");
@@ -431,14 +448,12 @@ function readFileText(file){
 async function playIntro(){
   showScreen("intro");
   
-  // 裏で背景読み込み
   startBgVideo.src = "library_loop.mp4";
   startBgVideo.muted = true;
   startBgVideo.playsInline = true;
-  startBgVideo.loop = true;
+.w  startBgVideo.loop =arn true;
   startBgVideo.load();
   
-  // イントロ再生
   introVideo.src = "intro.mp4";
   introVideo.muted = true;
   introVideo.playsInline = true;
@@ -447,8 +462,7 @@ async function playIntro(){
   
   try {
     await introVideo.play();
-  } catch (err){
-    console.warn("イントロ失敗:", err);
+  } catch (("イントロ失敗:", err);
     await showStartScreen();
     return;
   }
@@ -502,9 +516,11 @@ async function showStartScreen(){
 async function showLibrary(){
   startBgVideo.pause();
   
+  // iframe を非表示
+  battleFrame.style.display = "none";
+  
   showScreen("library");
   
-  // bgVideo 読み込み・再生
   if (bgVideo.src.indexOf("library_loop.mp4") === -1){
     bgVideo.src = "library_loop.mp4";
     bgVideo.load();
@@ -522,7 +538,6 @@ async function showLibrary(){
   libraryScreen.style.opacity = "1";
   libraryScreen.style.transition = "none";
   
-  // コマンド生成
   commandLayer.innerHTML = "";
   state.enemies.forEach(enemy => {
     const btn = document.createElement("button");
@@ -536,8 +551,6 @@ async function showLibrary(){
     btn.onclick = () => selectEnemy(enemy, btn);
     commandLayer.appendChild(btn);
   });
-  
-  
 }
 
 // ===== 敵を選択 =====
@@ -615,14 +628,54 @@ backButton.onclick = () => {
   showLibrary();
 };
 
-// ===== 入る =====
+// ===== 入る（iframe 起動） =====
 enterButton.onclick = () => {
-  if (!state.currentEnemy){
+  const enemy = state.currentEnemy;
+  if (!enemy){
     showError("敵が選択されていません");
     return;
   }
-  alert(`「${state.currentEnemy.name}」に入ります\n（バトル連動は未実装）`);
+  
+  // データを iframe に送信
+  const sendData = () => {
+    battleFrame.contentWindow.postMessage({
+      type: "startBattle",
+      timelineText: enemy.timelineText,
+      serifText: enemy.serifText,
+      videoURL: enemy.videoURL,
+    }, "*");
+  };
+  
+  // iframe 読み込み確認
+  try {
+    if (battleFrame.contentDocument && battleFrame.contentDocument.readyState === "complete"){
+      sendData();
+    } else {
+      battleFrame.onload = () => {
+        sendData();
+        battleFrame.onload = null;
+      };
+    }
+  } catch (err) {
+    // フォールバック
+    battleFrame.onload = () => {
+      sendData();
+      battleFrame.onload = null;
+    };
+  }
+  
+  // iframe を表示
+  battleFrame.style.display = "block";
+  enemyScreen.classList.remove("active");
 };
+
+// ===== iframe からのメッセージ受信 =====
+window.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "returnToLibrary"){
+    battleFrame.style.display = "none";
+    showLibrary();
+  }
+});
 
 // ===== フォルダ選択 =====
 folderButton.onclick = () => {
