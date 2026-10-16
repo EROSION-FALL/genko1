@@ -29,6 +29,7 @@ html,body{
   max-width:480px;margin:0 auto;
   background:#05020a;
   overflow:hidden;
+  
 }
 @media (min-width: 768px){
   #lib_game{ max-width:720px; }
@@ -886,13 +887,39 @@ html,body{width:100%;height:100%;background:#020005;color:#f0d0e8;font-family:'R
   white-space: pre-wrap; display: none;
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
+
+.lib_skipToggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 99999;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 0px solid rgba(255, 105, 180, 0.6);
+  border-radius: 4px;
+  color: #ffe6f2;
+  font-size: 11px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.lib_skipToggle.on {
+  background: rgba(255, 20, 147, 0.8);
+  border-color: #ff69b4;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255, 20, 147, 0.8);
+}
+
 </style>
 <style id="dynamicStyle"></style>
 </head>
 <body>
-<div id="lib_game">
-
-  <!-- ⓪ イントロ画面 -->
+  <div id="lib_game">
+    
+    <button id="lib_skipToggle" class="lib_skipToggle">SKIP OFF</button>
+    
+    <!-- ⓪ イントロ画面 -->
   <div id="lib_introScreen" class="lib_screen active">
     <video id="lib_introVideo" playsinline muted preload="auto"></video>
   </div>
@@ -1062,9 +1089,19 @@ function readFileText(file){
     reader.readAsText(file);
   });
 }
+// ===== スキップトグル =====
+const skipState = { on: false };
+const skipToggleBtn = document.getElementById("lib_skipToggle");
+skipToggleBtn.onclick = () => {
+  skipState.on = !skipState.on;
+  skipToggleBtn.textContent = skipState.on ? "SKIP ON" : "SKIP OFF";
+  skipToggleBtn.classList.toggle("on", skipState.on);
+};
 
 // ===== イントロ再生 =====
-async function playIntro(){
+async function playIntro() {
+  if (skipState.on) { await showStartScreen(); return; }
+  
   showScreen("intro");
   
   startBgVideo.src = "library_loop.mp4";
@@ -1098,7 +1135,7 @@ async function playIntro(){
     };
     introVideo.onended = finish;
     introVideo.ontimeupdate = () => {
-      if (introVideo.duration && introVideo.currentTime >= introVideo.duration - 0.1){
+      if (introVideo.duration && introVideo.currentTime >= introVideo.duration - 0.1) {
         finish();
       }
     };
@@ -1174,7 +1211,12 @@ async function showLibrary(){
 }
 
 // ===== 敵を選択 =====
-async function selectEnemy(enemy, btn){
+async function selectEnemy(enemy, btn) {
+  if (skipState.on) {
+    state.currentEnemy = enemy;
+    showEnemyPage(enemy);
+    return;
+  }
   if (state.screen !== "library") return;
   state.currentEnemy = enemy;
   
@@ -1209,7 +1251,7 @@ async function selectEnemy(enemy, btn){
   
   tv.onended = finish;
   tv.ontimeupdate = () => {
-    if (tv.duration && tv.currentTime >= tv.duration - 0.1){
+    if (tv.duration && tv.currentTime >= tv.duration - 0.1) {
       finish();
     }
   };
