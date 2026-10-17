@@ -1799,11 +1799,15 @@ function parseNewTimeline(text) {
         } else if (key === 'nextStage') {
           currentAction.nextStage = val; currentEventObj.nextStage = val;
         } else if (key === 'sfxCount') {
-          const sfxVal = parseInt(val);
-          currentAction.sfxCount = sfxVal; currentEventObj.sfxCount = sfxVal;
-        } else {
-          currentAction[key] = val; currentEventObj[key] = val;
-        }
+  const sfxVal = parseInt(val);
+  currentAction.sfxCount = sfxVal; currentEventObj.sfxCount = sfxVal;
+} else if (key === 'ui') {
+  currentAction.ui = val; currentEventObj.ui = val;
+} else if (key === 'goto') {
+  currentAction.goto = val; currentEventObj.goto = val;
+} else {
+  currentAction[key] = val; currentEventObj[key] = val;
+}
       }
     }
   }
@@ -2052,11 +2056,35 @@ function playEventVideo(eventData, eventName, onComplete=null) {
       }
     }
 
-    if (currentAction.nextStage !== undefined) {
-      gameState.stage = currentAction.nextStage;
-    }
+if (currentAction.nextStage !== undefined) {
+  gameState.stage = currentAction.nextStage;
+}
 
-    const sfx = currentAction.sfxCount !== undefined ? currentAction.sfxCount : (actionIndex === 1 && eventData.sfxCount !== undefined ? eventData.sfxCount : 0);
+// ★ goto 処理
+if (currentAction.goto === 'library') {
+  if (window.lib && window.lib.showLibrary) {
+    window.lib.showLibrary();
+  }
+  return;
+}
+
+
+// ★ UI表示切替
+if (currentAction.ui !== undefined) {
+  const uiElements = [
+    'bottomHUD', 'heroAvatarWrap', 'mainGaugeContainer',
+    'commands', 'nextAttackNotice', 'attackTimer',
+    'damageContainer',
+    'serifArea', 'heroSerifArea',
+  ];
+  const visible = currentAction.ui !== 'hide';
+uiElements.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.style.display = visible ? '' : 'none';
+});
+}
+
+const sfx = currentAction.sfxCount !== undefined ? currentAction.sfxCount : (actionIndex === 1 && eventData.sfxCount !== undefined ? eventData.sfxCount : 0);
     for (let i = 0; i < sfx; i++) {
       setTimeout(() => {
         if (sessionId !== gameState.playSessionId) return;
